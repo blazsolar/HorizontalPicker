@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Blaž Šolar
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.wefika.horizontalpicker;
 
 import android.animation.ArgbEvaluator;
@@ -13,6 +29,7 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.EdgeEffect;
 import android.widget.Scroller;
 
 /**
@@ -47,6 +64,8 @@ public class HorizontalPicker extends View {
      */
     private int mMaximumFlingVelocity;
 
+    private final int mOverscrollDistance;
+
     private int mTouchSlop;
 
     private CharSequence[] mValues;
@@ -71,6 +90,9 @@ public class HorizontalPicker extends View {
     private OnItemSelected mOnItemSelected;
 
     private int mSelectedItem;
+
+    private EdgeEffect mLeftEdgeEffect;
+    private EdgeEffect mRightEdgeEffect;
 
     public HorizontalPicker(Context context) {
         this(context, null);
@@ -122,6 +144,7 @@ public class HorizontalPicker extends View {
         mMinimumFlingVelocity = configuration.getScaledMinimumFlingVelocity();
         mMaximumFlingVelocity = configuration.getScaledMaximumFlingVelocity()
                 / SELECTOR_MAX_FLING_VELOCITY_ADJUSTMENT;
+        mOverscrollDistance = configuration.getScaledOverscrollDistance();
 
         mPreviousScrollerX = Integer.MIN_VALUE;
 
@@ -183,6 +206,38 @@ public class HorizontalPicker extends View {
         }
 
         canvas.restoreToCount(saveCount);
+
+        if(mLeftEdgeEffect != null) {
+            if(!mLeftEdgeEffect.isFinished()) {
+                final int restoreCount = canvas.getSaveCount();
+                final int width = getWidth();
+                final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+
+                canvas.rotate(270);
+                canvas.translate(-height + getPaddingTop(), Math.max(0, getScrollX()));
+                mLeftEdgeEffect.setSize(height, width);
+                if(mLeftEdgeEffect.draw(canvas)) {
+                    postInvalidate(); // TODO we should probably use postInvalidateOnAnimation(); for API 16+
+                }
+
+                canvas.restoreToCount(restoreCount);
+            }
+            if(!mRightEdgeEffect.isFinished()) {
+                final int restoreCount = canvas.getSaveCount();
+                final int width = getWidth();
+                final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+
+                canvas.rotate(90);
+                canvas.translate(-getPaddingTop(),
+                        -(Math.max(getScrollRange(), scrollX) + width));
+                mRightEdgeEffect.setSize(height, width);
+                if(mRightEdgeEffect.draw(canvas)) {
+                    postInvalidate(); // TODO we should probably use postInvalidateOnAnimation(); for API 16+
+                }
+
+                canvas.restoreToCount(restoreCount);
+            }
+        }
     }
 
     @Override
@@ -222,13 +277,31 @@ public class HorizontalPicker extends View {
                         mScrollingX = true;
 
                     }
-                    scrollBy(deltaMoveX, 0);
+
+                    final int range = getScrollRange();
+
+                    if(overScrollBy(deltaMoveX, 0, getScrollX(), 0, range, 0,
+                            mOverscrollDistance, 0, true)) {
+                        mVelocityTracker.clear();
+                    }
+
+                    final float pulledToX = getScrollX() + deltaMoveX;
+                    if(pulledToX < 0) {
+                        mLeftEdgeEffect.onPull((float) deltaMoveX / getWidth());
+                        if(!mRightEdgeEffect.isFinished()) {
+                            mRightEdgeEffect.onRelease();
+                        }
+                    } else if(pulledToX > range) {
+                        mRightEdgeEffect.onPull((float) deltaMoveX / getWidth());
+                        if(!mLeftEdgeEffect.isFinished()) {
+                            mLeftEdgeEffect.onRelease();
+                        }
+                    }
 
                     mLastDownEventX = currentMoveX;
                     invalidate();
 
                 }
-
 
                 break;
             case MotionEvent.ACTION_DOWN:
@@ -283,9 +356,20 @@ public class HorizontalPicker extends View {
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
 
+                if(mLeftEdgeEffect != null) {
+                    mLeftEdgeEffect.onRelease();
+                    mRightEdgeEffect.onRelease();
+                }
+
             case MotionEvent.ACTION_CANCEL:
                 mPressedItem = -1;
                 invalidate();
+
+                if(mLeftEdgeEffect != null) {
+                    mLeftEdgeEffect.onRelease();
+                    mRightEdgeEffect.onRelease();
+                }
+
                 break;
         }
 
@@ -300,6 +384,76 @@ public class HorizontalPicker extends View {
     @Override
     public void getFocusedRect(Rect r) {
         super.getFocusedRect(r); // TODO this should only be current item
+    }
+
+    public void setOnItemSelectedListener(OnItemSelected onItemSelected) {
+        mOnItemSelected = onItemSelected;
+    }
+
+    public int getSelectedItem() {
+        int x = getScrollX();
+        return getPositionFromCoordinates(x);
+    }
+
+    public void setSelectedItem(int index) {
+        mSelectedItem = index;
+        scrollToItem(index);
+    }
+
+    @Override
+    public void scrollBy(int x, int y) {
+        super.scrollBy(x, 0);
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+//        x = getInBoundsX(x);
+        super.scrollTo(x, y);
+    }
+
+    /**
+     * @return
+     */
+    public CharSequence[] getValues() {
+        return mValues;
+    }
+
+    /**
+     * Sets values to choose from
+     * @param values New values to choose from
+     */
+    public void setValues(String[] values) {
+        mValues = values;
+
+        if(mValues != null && values != null && mValues.length == values.length ||
+                mValues != null ^ values != null) {
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    @Override
+    public void setOverScrollMode(int overScrollMode) {
+        if(overScrollMode != OVER_SCROLL_NEVER) {
+            Context context = getContext();
+            mLeftEdgeEffect = new EdgeEffect(context);
+            mRightEdgeEffect = new EdgeEffect(context);
+        } else {
+            mLeftEdgeEffect = null;
+            mRightEdgeEffect = null;
+        }
+
+        super.setOverScrollMode(overScrollMode);
+    }
+
+    @Override
+    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        super.scrollTo(scrollX, scrollY);
+    }
+
+    @Override
+    protected void drawableStateChanged() {
+        super.drawableStateChanged(); //TODO
     }
 
     private void computeScrollX() {
@@ -365,7 +519,7 @@ public class HorizontalPicker extends View {
     private void moveToNext() {
 
         int deltaMoveX = mItemWidth;
-        deltaMoveX = getDeltaInBound(deltaMoveX);
+        deltaMoveX = getRelativeInBound(deltaMoveX);
 
         mFlingScrollerX.startScroll(getScrollX(), 0, deltaMoveX, 0);
         invalidate();
@@ -378,7 +532,7 @@ public class HorizontalPicker extends View {
     private void moveToPrev() {
 
         int deltaMoveX = mItemWidth * -1;
-        deltaMoveX = getDeltaInBound(deltaMoveX);
+        deltaMoveX = getRelativeInBound(deltaMoveX);
 
         mFlingScrollerX.startScroll(getScrollX(), 0, deltaMoveX, 0);
         invalidate();
@@ -411,44 +565,10 @@ public class HorizontalPicker extends View {
         return (Integer) new ArgbEvaluator().evaluate(proportion, selectedColor, defaultColor);
     }
 
-    public void setOnItemSelectedListener(OnItemSelected onItemSelected) {
-        mOnItemSelected = onItemSelected;
-    }
-
-    @Override
-    protected void drawableStateChanged() {
-        super.drawableStateChanged();
-    }
-
-    public int getSelectedItem() {
-        int x = getScrollX();
-        return getPositionFromCoordinates(x);
-    }
-
-    public void setSelectedItem(int index) {
-        mSelectedItem = index;
-        scrollToItem(index);
-    }
-
-    @Override
-    public void scrollBy(int x, int y) {
-        super.scrollBy(x, 0);
-    }
-
-    @Override
-    public void scrollTo(int x, int y) {
-        x = getInBoundsX(x);
-        super.scrollTo(x, y);
-    }
-
-    public CharSequence[] getValues() {
-        return mValues;
-    }
-
-    public void setValues(String[] values) {
-        mValues = values;
-    }
-
+    /**
+     * Sets text size for items
+     * @param size New item text size in px.
+     */
     private void setTextSize(float size) {
         if(size != mSelectorWheelPaint.getTextSize()) {
             mSelectorWheelPaint.setTextSize(size);
@@ -458,29 +578,41 @@ public class HorizontalPicker extends View {
         }
     }
 
+    /**
+     * Calculates item from x coordinate position.
+     * @param x Scroll position to calculate.
+     * @return Selected item from scrolling position in {param x}
+     */
     private int getPositionFromCoordinates(int x) {
         return Math.round(x / (mItemWidth * 1f));
     }
 
-    private void scrollToItem(int indexX) {
-        scrollTo(mItemWidth * indexX, 0);
+    /**
+     * Scrolls to specified item.
+     * @param index Index of an item to scroll to
+     */
+    private void scrollToItem(int index) {
+        scrollTo(mItemWidth * index, 0);
         invalidate();
     }
 
     /**
-     * Calculates delta in bounds. {@link com.wefika.horizontalpicker.HorizontalPicker#getInBoundsX(int)}
-     * @param deltaX
-     * @return
+     * Calculates relative horizontal scroll position to be within our scroll bounds.
+     * {@link com.wefika.horizontalpicker.HorizontalPicker#getInBoundsX(int)}
+     * @param x Relative scroll position to calculate
+     * @return Current scroll position + {param x} if is within our scroll bounds, otherwise it
+     * will return min/max scroll position.
      */
-    private int getDeltaInBound(int deltaX) {
+    private int getRelativeInBound(int x) {
         int scrollX = getScrollX();
-        return getInBoundsX(scrollX + deltaX) - scrollX;
+        return getInBoundsX(scrollX + x) - scrollX;
     }
 
     /**
-     * If x is to big or to small to be in bounds of scroller it calculates max/min value otherwise retirns x
-     * @param x
-     * @return
+     * Calculates x scroll position that is still in range of view scroller
+     * @param x Scroll position to calculate.
+     * @return {param x} if is within bounds of over scroller, otherwise it will return min/max
+     * value of scoll position.
      */
     private int getInBoundsX(int x) {
 
@@ -492,10 +624,17 @@ public class HorizontalPicker extends View {
         return x;
     }
 
+    private int getScrollRange() {
+        int scrollRange = 0;
+        if(mValues != null && mValues.length != 0) {
+            scrollRange = Math.max(0, (mValues.length - 1) * mItemWidth);
+        }
+        return scrollRange;
+    }
+
     public interface OnItemSelected {
 
         public void onItemSelected(int index);
 
     }
-
 }
