@@ -30,7 +30,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.EdgeEffect;
-import android.widget.Scroller;
+import android.widget.OverScroller;
 
 /**
  * Created by Blaž Šolar on 24/01/14.
@@ -77,8 +77,8 @@ public class HorizontalPicker extends View {
     private float mLastDownEventX;
     private long mLastDownEventTime;
 
-    private Scroller mFlingScrollerX;
-    private Scroller mAdjustScrollerX;
+    private OverScroller mFlingScrollerX;
+    private OverScroller mAdjustScrollerX;
 
     private int mPreviousScrollerX;
 
@@ -135,8 +135,8 @@ public class HorizontalPicker extends View {
 
         setWillNotDraw(false);
 
-        mFlingScrollerX = new Scroller(context, null, true);
-        mAdjustScrollerX = new Scroller(context, new DecelerateInterpolator(2.5f));
+        mFlingScrollerX = new OverScroller(context);
+        mAdjustScrollerX = new OverScroller(context, new DecelerateInterpolator(2.5f));
 
         // initialize constants
         ViewConfiguration configuration = ViewConfiguration.get(context);
@@ -449,6 +449,10 @@ public class HorizontalPicker extends View {
     @Override
     protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
         super.scrollTo(scrollX, scrollY);
+
+        if(!mFlingScrollerX.isFinished() && clampedX) {
+            mFlingScrollerX.springBack(scrollX, scrollY, 0, getScrollRange(), 0, 0);
+        }
     }
 
     @Override
@@ -457,7 +461,7 @@ public class HorizontalPicker extends View {
     }
 
     private void computeScrollX() {
-        Scroller scroller = mFlingScrollerX;
+        OverScroller scroller = mFlingScrollerX;
         if(scroller.isFinished()) {
             scroller = mAdjustScrollerX;
             if(scroller.isFinished()) {
@@ -465,25 +469,38 @@ public class HorizontalPicker extends View {
             }
         }
 
-        scroller.computeScrollOffset();
-        int currentScrollerX = scroller.getCurrX();
-        if(mPreviousScrollerX == Integer.MIN_VALUE) {
-            mPreviousScrollerX = scroller.getStartX();
-        }
+        if(scroller.computeScrollOffset()) {
 
-        scrollBy(currentScrollerX - mPreviousScrollerX, 0);
-        mPreviousScrollerX = currentScrollerX;
-        if(scroller.isFinished()) {
-            onScrollerFinishedX(scroller);
-        } else {
-            invalidate();
+            int currentScrollerX = scroller.getCurrX();
+            if(mPreviousScrollerX == Integer.MIN_VALUE) {
+                mPreviousScrollerX = scroller.getStartX();
+            }
+
+            int range = getScrollRange();
+            if(mPreviousScrollerX >= 0 && currentScrollerX < 0) {
+                mLeftEdgeEffect.onAbsorb((int) scroller.getCurrVelocity());
+            } else if(mPreviousScrollerX <= range && currentScrollerX > range) {
+                mRightEdgeEffect.onAbsorb((int) scroller.getCurrVelocity());
+            }
+
+            overScrollBy(currentScrollerX - mPreviousScrollerX, 0, mPreviousScrollerX, getScrollY(),
+                    getScrollRange(), 0, mOverscrollDistance, 0, false);
+            mPreviousScrollerX = currentScrollerX;
+
+            if(scroller.isFinished()) {
+                onScrollerFinishedX(scroller);
+            }
+
+            postInvalidate();
+//            postInvalidateOnAnimation(); // TODO
         }
     }
 
     private void flingX(int velocityX) {
 
         mPreviousScrollerX = Integer.MIN_VALUE;
-        mFlingScrollerX.fling(getScrollX(), 0, -velocityX, 0, 0, mItemWidth * (mValues.length - 1), 0, 0);
+        mFlingScrollerX.fling(getScrollX(), getScrollY(), -velocityX, 0,     0,
+                mItemWidth * (mValues.length - 1), 0, 0, getWidth()/2, 0);
 
         invalidate();
     }
@@ -509,7 +526,7 @@ public class HorizontalPicker extends View {
         invalidate();
     }
 
-    private void onScrollerFinishedX(Scroller scroller) {
+    private void onScrollerFinishedX(OverScroller scroller) {
         if(scroller == mFlingScrollerX) {
             adjustToNearestItemX();
             mScrollingX = false;
