@@ -1,8 +1,11 @@
 HorizontalPicker
 ================
 
-Android widget allowing user to select single item from list by swiping left and right.
+HorizontalPicker is an open source android library that enables users to select single item
+by scrolling or tapping left and right to move between an array of items.
 
+Example
+-------
 ![screen recording](https://raw2.github.com/blazsolar/HorizontalPicker/master/images/screen.gif "Screen recording")
 
 Usage
