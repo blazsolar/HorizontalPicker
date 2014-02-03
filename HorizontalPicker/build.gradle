@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
     }
     release {
         runProguard false
@@ -16,5 +16,4 @@ android {
     }
 }
 
-dependencies {
-}
+apply from: '../maven_push.gradle'
