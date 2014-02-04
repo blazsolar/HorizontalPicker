@@ -8,6 +8,11 @@ Example
 -------
 ![screen recording](https://raw2.github.com/blazsolar/HorizontalPicker/master/images/screen.gif "Screen recording")
 
+Dependencies
+------------
+
+    compile 'com.wefika:horizontal-picker:0.1.0'
+
 Usage
 -----
 
