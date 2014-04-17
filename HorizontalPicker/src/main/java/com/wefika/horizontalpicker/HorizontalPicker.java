@@ -77,6 +77,7 @@ public class HorizontalPicker extends View {
 
     private TextPaint mTextPaint;
     private BoringLayout.Metrics mBoringMetrics;
+    private TextUtils.TruncateAt mEllipsize;
 
     private int mItemWidth;
 
@@ -123,10 +124,13 @@ public class HorizontalPicker extends View {
         );
 
         CharSequence[] values;
+        int ellipsize = 3; // END default value
 
         try {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
             values = a.getTextArray(R.styleable.HorizontalPicker_values);
+            ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
+
 
             float textSize = a.getDimension(R.styleable.HorizontalPicker_android_textSize, -1);
             if(textSize > -1) {
@@ -134,6 +138,21 @@ public class HorizontalPicker extends View {
             }
         } finally {
             a.recycle();
+        }
+
+        switch (ellipsize) {
+            case 1:
+                setEllipsize(TextUtils.TruncateAt.START);
+                break;
+            case 2:
+                setEllipsize(TextUtils.TruncateAt.MIDDLE);
+                break;
+            case 3:
+                setEllipsize(TextUtils.TruncateAt.END);
+                break;
+            case 4:
+                setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                break;
         }
 
         Paint.FontMetricsInt fontMetricsInt = mTextPaint.getFontMetricsInt();
@@ -214,7 +233,7 @@ public class HorizontalPicker extends View {
 
             BoringLayout layout = mLayouts[i];
             layout.replaceOrMake(mValues[i], mTextPaint, mItemWidth,
-                    Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, TextUtils.TruncateAt.END,
+                    Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, mEllipsize,
                     mItemWidth);
 
             int saveCountHeight = canvas.getSaveCount();
@@ -455,7 +474,7 @@ public class HorizontalPicker extends View {
             mLayouts = new BoringLayout[mValues.length];
             for (int i = 0; i < mLayouts.length; i++) {
                 mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
-                        1f, 1f, mBoringMetrics, false, TextUtils.TruncateAt.END, mItemWidth);
+                        1f, 1f, mBoringMetrics, false, mEllipsize, mItemWidth);
             }
 
             requestLayout();
@@ -476,6 +495,18 @@ public class HorizontalPicker extends View {
         }
 
         super.setOverScrollMode(overScrollMode);
+    }
+
+    public TextUtils.TruncateAt getEllipsize() {
+        return mEllipsize;
+    }
+
+    public void setEllipsize(TextUtils.TruncateAt ellipsize) {
+        if (mEllipsize != ellipsize) {
+            mEllipsize = ellipsize;
+
+            invalidate();
+        }
     }
 
     @Override

@@ -21,6 +21,7 @@
         <attr name="android:textColor" />
         <attr name="android:textSize" />
         <attr name="values" format="reference" />
+        <attr name="android:ellipsize" />
     </declare-styleable>
 
     <attr name="horizontalPickerStyle" format="reference" />
