@@ -23,6 +23,10 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.BoringLayout;
+import android.text.Layout;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -69,8 +73,10 @@ public class HorizontalPicker extends View {
     private int mTouchSlop;
 
     private CharSequence[] mValues;
+    private BoringLayout[] mLayouts;
 
-    private Paint mSelectorWheelPaint;
+    private TextPaint mTextPaint;
+    private BoringLayout.Metrics mBoringMetrics;
 
     private int mItemWidth;
 
@@ -106,10 +112,9 @@ public class HorizontalPicker extends View {
         super(context, attrs, defStyle);
 
         // create the selector wheel paint
-        Paint paint = new Paint();
+        TextPaint paint = new TextPaint();
         paint.setAntiAlias(true);
-        paint.setTextAlign(Paint.Align.CENTER);
-        mSelectorWheelPaint = paint;
+        mTextPaint = paint;
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
@@ -117,9 +122,11 @@ public class HorizontalPicker extends View {
                 defStyle, 0
         );
 
+        CharSequence[] values;
+
         try {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
-            mValues = a.getTextArray(R.styleable.HorizontalPicker_values);
+            values = a.getTextArray(R.styleable.HorizontalPicker_values);
 
             float textSize = a.getDimension(R.styleable.HorizontalPicker_android_textSize, -1);
             if(textSize > -1) {
@@ -129,9 +136,14 @@ public class HorizontalPicker extends View {
             a.recycle();
         }
 
-        if(mValues == null) {
-            mValues = new String[0];
-        }
+        Paint.FontMetricsInt fontMetricsInt = mTextPaint.getFontMetricsInt();
+        mBoringMetrics = new BoringLayout.Metrics();
+        mBoringMetrics.ascent = fontMetricsInt.ascent;
+        mBoringMetrics.bottom = fontMetricsInt.bottom;
+        mBoringMetrics.descent = fontMetricsInt.descent;
+        mBoringMetrics.leading = fontMetricsInt.leading;
+        mBoringMetrics.top = fontMetricsInt.top;
+        mBoringMetrics.width = mItemWidth;
 
         setWillNotDraw(false);
 
@@ -147,6 +159,8 @@ public class HorizontalPicker extends View {
         mOverscrollDistance = configuration.getScaledOverscrollDistance();
 
         mPreviousScrollerX = Integer.MIN_VALUE;
+
+        setValues(values);
 
     }
 
@@ -164,7 +178,7 @@ public class HorizontalPicker extends View {
         if(heightMode == MeasureSpec.EXACTLY) {
             height = heightSize;
         } else {
-            Paint.FontMetrics fontMetrics = mSelectorWheelPaint.getFontMetrics();
+            Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
             int heightText = (int) (Math.abs(fontMetrics.ascent) + Math.abs(fontMetrics.descent));
             heightText += getPaddingTop() + getPaddingBottom();
 
@@ -180,12 +194,8 @@ public class HorizontalPicker extends View {
 
         int scrollX = getScrollX();
 
-        int y = (int) ((canvas.getHeight() / 2) - ((mSelectorWheelPaint.descent() + mSelectorWheelPaint.ascent()) / 2)) ;
-
         int saveCount = canvas.getSaveCount();
         canvas.save();
-
-        canvas.translate(mItemWidth / 2, 0);
 
         for (int i = 0; i < mValues.length; i++) {
 
@@ -200,9 +210,20 @@ public class HorizontalPicker extends View {
             } else if(i == mPressedItem) {
                 color = mTextColor.getColorForState(new int[] { android.R.attr.state_pressed }, color);
             }
-            mSelectorWheelPaint.setColor(color);
+            mTextPaint.setColor(color);
 
-            canvas.drawText(mValues[i].toString(), 0, y, mSelectorWheelPaint);
+            BoringLayout layout = mLayouts[i];
+            layout.replaceOrMake(mValues[i], mTextPaint, mItemWidth,
+                    Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, TextUtils.TruncateAt.END,
+                    mItemWidth);
+
+            int saveCountHeight = canvas.getSaveCount();
+            canvas.save();
+
+            canvas.translate(0, (canvas.getHeight() - layout.getHeight()) / 2);
+            layout.draw(canvas);
+
+            canvas.restoreToCount(saveCountHeight);
         }
 
         canvas.restoreToCount(saveCount);
@@ -422,14 +443,25 @@ public class HorizontalPicker extends View {
      * Sets values to choose from
      * @param values New values to choose from
      */
-    public void setValues(String[] values) {
-        mValues = values;
+    public void setValues(CharSequence[] values) {
 
-        if(mValues != null && values != null && mValues.length == values.length ||
-                mValues != null ^ values != null) {
+        if (mValues != values) {
+            mValues = values;
+
+            if (mValues == null) {
+                mValues = new CharSequence[0];
+            }
+
+            mLayouts = new BoringLayout[mValues.length];
+            for (int i = 0; i < mLayouts.length; i++) {
+                mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
+                        1f, 1f, mBoringMetrics, false, TextUtils.TruncateAt.END, mItemWidth);
+            }
+
             requestLayout();
             invalidate();
         }
+
     }
 
     @Override
@@ -587,8 +619,8 @@ public class HorizontalPicker extends View {
      * @param size New item text size in px.
      */
     private void setTextSize(float size) {
-        if(size != mSelectorWheelPaint.getTextSize()) {
-            mSelectorWheelPaint.setTextSize(size);
+        if(size != mTextPaint.getTextSize()) {
+            mTextPaint.setTextSize(size);
 
             requestLayout();
             invalidate();
