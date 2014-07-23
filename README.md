@@ -23,6 +23,10 @@ Usage
         xmlns:picker="http://schemas.android.com/apk/res/com.wefika.horizontalpicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/textColor"
+        android:textSize="@dimen/textSize"
+        android:ellipsize="none | start | middle | end | marquee"
+        android:marqueeRepeatLimit="-1"
         picker:values="@array/values" />
 ```
 
