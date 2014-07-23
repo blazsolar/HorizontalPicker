@@ -109,6 +109,7 @@ public class HorizontalPicker extends View {
     private EdgeEffect mRightEdgeEffect;
 
     private Marquee mMarquee;
+    private int mMarqueeRepeatLimit = 3;
 
     public HorizontalPicker(Context context) {
         this(context, null);
@@ -139,6 +140,7 @@ public class HorizontalPicker extends View {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
             values = a.getTextArray(R.styleable.HorizontalPicker_values);
             ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
+            mMarqueeRepeatLimit = a.getInt(R.styleable.HorizontalPicker_android_marqueeRepeatLimit, mMarqueeRepeatLimit);
 
 
             float textSize = a.getDimension(R.styleable.HorizontalPicker_android_textSize, -1);
@@ -504,6 +506,14 @@ public class HorizontalPicker extends View {
         scrollToItem(index);
     }
 
+    public int getMarqueeRepeatLimit() {
+        return mMarqueeRepeatLimit;
+    }
+
+    public void setMarqueeRepeatLimit(int marqueeRepeatLimit) {
+        mMarqueeRepeatLimit = marqueeRepeatLimit;
+    }
+
     @Override
     public void scrollBy(int x, int y) {
         super.scrollBy(x, 0);
@@ -675,7 +685,7 @@ public class HorizontalPicker extends View {
         if (mEllipsize == TextUtils.TruncateAt.MARQUEE
                 && mItemWidth < layout.getLineWidth(0)) {
             mMarquee = new Marquee(this, layout);
-            mMarquee.start(100);
+            mMarquee.start(mMarqueeRepeatLimit);
         }
 
     }
