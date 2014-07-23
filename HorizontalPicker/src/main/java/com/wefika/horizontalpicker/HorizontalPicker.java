@@ -82,7 +82,6 @@ public class HorizontalPicker extends View {
     private int mItemWidth;
 
     private float mLastDownEventX;
-    private long mLastDownEventTime;
 
     private OverScroller mFlingScrollerX;
     private OverScroller mAdjustScrollerX;
@@ -355,7 +354,6 @@ public class HorizontalPicker extends View {
                 }
 
                 mLastDownEventX = event.getX();
-                mLastDownEventTime = event.getEventTime();
 
                 if(!mScrollingX) {
                     mPressedItem = getPositionFromCoordinates((int) (getScrollX() - mItemWidth * 1.5f + event.getX()));
@@ -373,8 +371,7 @@ public class HorizontalPicker extends View {
                     flingX(initialVelocityX);
                 } else {
                     float positionX = event.getX();
-                    long deltaTime = event.getEventTime() - mLastDownEventTime;
-                    if(!mScrollingX && deltaTime < ViewConfiguration.getTapTimeout()) {
+                    if(!mScrollingX) {
                         int itemPos = getPositionOnScreen(positionX);
                         if(itemPos == 0) {
                             moveToPrev();
