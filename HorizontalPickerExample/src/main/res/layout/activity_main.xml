@@ -30,7 +30,9 @@
         android:textSize="22sp"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
-        android:ellipsize="middle"
-        app:values="@array/values"/>
+        android:ellipsize="marquee"
+        app:values="@array/values"
+        android:focusable="true"
+        android:focusableInTouchMode="true"/>
 
 </merge>
