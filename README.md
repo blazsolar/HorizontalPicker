@@ -28,7 +28,8 @@ Usage
         android:ellipsize="none | start | middle | end | marquee"
         android:marqueeRepeatLimit="-1"
         picker:values="@array/values"
-        picker:dividerSize="@dimen/itemPadding" />
+        picker:dividerSize="@dimen/itemPadding"
+        picker:sideItems="@integer/sideItems" />
 ```
 
 License
