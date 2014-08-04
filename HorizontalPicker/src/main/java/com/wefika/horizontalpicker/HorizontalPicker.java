@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -270,13 +269,6 @@ public class HorizontalPicker extends View {
             }
 
             canvas.clipRect(clipBounds);
-
-            // TODO remove
-            Paint paint = new Paint();
-            paint.setColor(Color.RED);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(clipBounds, paint);
-
             layout.draw(canvas);
 
             if (mMarquee != null && i == selectedItem && mMarquee.shouldDrawGhost()) {
