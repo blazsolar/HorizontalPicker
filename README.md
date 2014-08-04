@@ -4,6 +4,8 @@ HorizontalPicker
 HorizontalPicker is an open source android library that enables users to select single item
 by scrolling or tapping left and right to move between an array of items.
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker)
+
 Example
 -------
 ![screen recording](https://raw2.github.com/blazsolar/HorizontalPicker/master/images/screen.gif "Screen recording")
@@ -11,7 +13,7 @@ Example
 Dependencies
 ------------
 
-    compile 'com.wefika:horizontal-picker:0.2.0'
+    compile 'com.wefika:horizontal-picker:<version>'
 
 Usage
 -----
@@ -21,7 +23,12 @@ Usage
         xmlns:picker="http://schemas.android.com/apk/res/com.wefika.horizontalpicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        picker:values="@array/values" />
+        android:textColor="@color/textColor"
+        android:textSize="@dimen/textSize"
+        android:ellipsize="none | start | middle | end | marquee"
+        android:marqueeRepeatLimit="-1"
+        picker:values="@array/values"
+        picker:dividerSize="@dimen/itemPadding" />
 ```
 
 License

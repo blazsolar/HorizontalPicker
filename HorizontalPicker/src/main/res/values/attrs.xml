@@ -22,6 +22,8 @@
         <attr name="android:textSize" />
         <attr name="values" format="reference" />
         <attr name="android:ellipsize" />
+        <attr name="android:marqueeRepeatLimit" />
+        <attr name="dividerSize" format="dimension" />
     </declare-styleable>
 
     <attr name="horizontalPickerStyle" format="reference" />
