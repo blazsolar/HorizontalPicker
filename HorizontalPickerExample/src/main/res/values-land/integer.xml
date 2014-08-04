@@ -17,16 +17,6 @@
 
 <resources>
 
-    <declare-styleable name="HorizontalPicker">
-        <attr name="android:textColor" />
-        <attr name="android:textSize" />
-        <attr name="values" format="reference" />
-        <attr name="android:ellipsize" />
-        <attr name="android:marqueeRepeatLimit" />
-        <attr name="dividerSize" format="dimension" />
-        <attr name="sideItems" format="integer" />
-    </declare-styleable>
-
-    <attr name="horizontalPickerStyle" format="reference" />
+    <integer name="numSideItems">2</integer>
 
 </resources>
