@@ -34,6 +34,7 @@
         android:marqueeRepeatLimit="2"
         app:values="@array/values"
         android:focusable="true"
-        android:focusableInTouchMode="true"/>
+        android:focusableInTouchMode="true"
+        app:dividerSize="10dp"/>
 
 </merge>
