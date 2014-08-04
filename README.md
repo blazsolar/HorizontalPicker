@@ -27,7 +27,8 @@ Usage
         android:textSize="@dimen/textSize"
         android:ellipsize="none | start | middle | end | marquee"
         android:marqueeRepeatLimit="-1"
-        picker:values="@array/values" />
+        picker:values="@array/values"
+        picker:dividerSize="@dimen/itemPadding" />
 ```
 
 License
