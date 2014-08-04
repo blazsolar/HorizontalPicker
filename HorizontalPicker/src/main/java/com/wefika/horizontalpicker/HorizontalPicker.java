@@ -146,7 +146,7 @@ public class HorizontalPicker extends View {
             ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
             mMarqueeRepeatLimit = a.getInt(R.styleable.HorizontalPicker_android_marqueeRepeatLimit, mMarqueeRepeatLimit);
             mDividerSize = a.getDimension(R.styleable.HorizontalPicker_dividerSize, mDividerSize);
-            mSideItems = a.getInt(R.styleable.HorizontalPicker_sideItems, mSideItems);
+            setSideItems(a.getInt(R.styleable.HorizontalPicker_sideItems, mSideItems));
 
             float textSize = a.getDimension(R.styleable.HorizontalPicker_android_textSize, -1);
             if(textSize > -1) {
@@ -523,6 +523,20 @@ public class HorizontalPicker extends View {
 
     public void setMarqueeRepeatLimit(int marqueeRepeatLimit) {
         mMarqueeRepeatLimit = marqueeRepeatLimit;
+    }
+
+    /**
+     * @return Number of items on each side of current item.
+     */
+    public int getSideItems() {
+        return mSideItems;
+    }
+
+    public void setSideItems(int sideItems) {
+        if (mSideItems < 0) {
+            throw new IllegalArgumentException("Number of items on each side must be grater or equal to 0.");
+        }
+        mSideItems = sideItems;
     }
 
     @Override
