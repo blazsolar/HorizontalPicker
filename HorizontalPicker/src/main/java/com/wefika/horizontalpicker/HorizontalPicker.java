@@ -139,6 +139,7 @@ public class HorizontalPicker extends View {
 
         CharSequence[] values;
         int ellipsize = 3; // END default value
+        int sideItems = mSideItems;
 
         try {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
@@ -146,7 +147,7 @@ public class HorizontalPicker extends View {
             ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
             mMarqueeRepeatLimit = a.getInt(R.styleable.HorizontalPicker_android_marqueeRepeatLimit, mMarqueeRepeatLimit);
             mDividerSize = a.getDimension(R.styleable.HorizontalPicker_dividerSize, mDividerSize);
-            setSideItems(a.getInt(R.styleable.HorizontalPicker_sideItems, mSideItems));
+            sideItems = a.getInt(R.styleable.HorizontalPicker_sideItems, sideItems);
 
             float textSize = a.getDimension(R.styleable.HorizontalPicker_android_textSize, -1);
             if(textSize > -1) {
@@ -196,6 +197,7 @@ public class HorizontalPicker extends View {
         mPreviousScrollerX = Integer.MIN_VALUE;
 
         setValues(values);
+        setSideItems(sideItems);
 
     }
 
@@ -354,18 +356,8 @@ public class HorizontalPicker extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if(w != oldw) {
-            int items = mSideItems * 2 + 1;
-            int totalPadding = ((int) mDividerSize * (items - 1));
-            mItemWidth = (w - totalPadding) / items;
-        }
 
-        mItemClipBounds = new RectF(0, 0, mItemWidth, h);
-        mItemClipBoundsOffser = new RectF(mItemClipBounds);
-
-        scrollToItem(mSelectedItem);
-
-        startMarqueeIfNeeded();
+        calculateItemSize(w, h);
     }
 
     @Override
@@ -535,8 +527,10 @@ public class HorizontalPicker extends View {
     public void setSideItems(int sideItems) {
         if (mSideItems < 0) {
             throw new IllegalArgumentException("Number of items on each side must be grater or equal to 0.");
+        } else if (mSideItems != sideItems) {
+            mSideItems = sideItems;
+            calculateItemSize(getWidth(), getHeight());
         }
-        mSideItems = sideItems;
     }
 
     @Override
@@ -695,6 +689,21 @@ public class HorizontalPicker extends View {
 
         mAdjustScrollerX.startScroll(x, 0, deltaX, 0, SELECTOR_ADJUSTMENT_DURATION_MILLIS);
         invalidate();
+    }
+
+    private void calculateItemSize(int w, int h) {
+
+        int items = mSideItems * 2 + 1;
+        int totalPadding = ((int) mDividerSize * (items - 1));
+        mItemWidth = (w - totalPadding) / items;
+
+        mItemClipBounds = new RectF(0, 0, mItemWidth, h);
+        mItemClipBoundsOffser = new RectF(mItemClipBounds);
+
+        scrollToItem(mSelectedItem);
+
+        startMarqueeIfNeeded();
+
     }
 
     private void onScrollerFinishedX(OverScroller scroller) {
