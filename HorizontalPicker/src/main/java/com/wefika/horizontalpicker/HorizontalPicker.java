@@ -309,6 +309,11 @@ public class HorizontalPicker extends View {
         mTextDir = getTextDirectionHeuristic();
     }
 
+    /**
+     * TODO cache values
+     * @param text
+     * @return
+     */
     private boolean isRtl(CharSequence text) {
         if (mTextDir == null) {
             mTextDir = getTextDirectionHeuristic();
