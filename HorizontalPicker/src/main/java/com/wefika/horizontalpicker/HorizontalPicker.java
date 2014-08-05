@@ -27,6 +27,8 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.BoringLayout;
 import android.text.Layout;
 import android.text.TextPaint;
@@ -563,6 +565,33 @@ public class HorizontalPicker extends View {
     }
 
     @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+
+        if (!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        setSelectedItem(ss.mSelItem);
+
+
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+
+        SavedState savedState = new SavedState(superState);
+        savedState.mSelItem = mSelectedItem;
+
+        return savedState;
+
+    }
+
+    @Override
     public void setOverScrollMode(int overScrollMode) {
         if(overScrollMode != OVER_SCROLL_NEVER) {
             Context context = getContext();
@@ -964,6 +993,30 @@ public class HorizontalPicker extends View {
 
         boolean isStopped() {
             return mStatus == MARQUEE_STOPPED;
+        }
+    }
+
+    public static class SavedState extends BaseSavedState {
+
+        private int mSelItem;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+
+            dest.writeInt(mSelItem);
+        }
+
+        @Override
+        public String toString() {
+            return  "HorizontalPicker.SavedState{"
+                    + Integer.toHexString(System.identityHashCode(this))
+                    + " selItem=" + mSelItem
+                    + "}";
         }
     }
 
