@@ -248,9 +248,6 @@ public class HorizontalPicker extends View {
 
             // get text layout
             BoringLayout layout = mLayouts[i];
-            layout.replaceOrMake(mValues[i], mTextPaint, mItemWidth,
-                    Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, mEllipsize,
-                    mItemWidth);
 
             int saveCountHeight = canvas.getSaveCount();
             canvas.save();
@@ -316,7 +313,7 @@ public class HorizontalPicker extends View {
         if (mTextDir == null) {
             mTextDir = getTextDirectionHeuristic();
         }
-        
+
         return mTextDir.isRtl(text, 0, text.length());
     }
 
@@ -346,6 +343,18 @@ public class HorizontalPicker extends View {
                     return TextDirectionHeuristicsCompat.LOCALE;
             }
         }
+    }
+
+    private void remakeLayout() {
+
+        if (mLayouts != null && mLayouts.length > 0) {
+            for (int i = 0; i < mLayouts.length; i++) {
+                mLayouts[i].replaceOrMake(mValues[i], mTextPaint, mItemWidth,
+                        Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, mEllipsize,
+                        mItemWidth);
+            }
+        }
+
     }
 
     private void drawEdgeEffect(Canvas canvas, EdgeEffect edgeEffect, int degrees) {
@@ -656,6 +665,7 @@ public class HorizontalPicker extends View {
         if (mEllipsize != ellipsize) {
             mEllipsize = ellipsize;
 
+            remakeLayout();
             invalidate();
         }
     }
@@ -755,6 +765,7 @@ public class HorizontalPicker extends View {
 
         scrollToItem(mSelectedItem);
 
+        remakeLayout();
         startMarqueeIfNeeded();
 
     }
@@ -777,10 +788,11 @@ public class HorizontalPicker extends View {
 
         stopMarqueeIfNeeded();
 
-        Layout layout = mLayouts[getSelectedItem()];
+        int item = getSelectedItem();
+        Layout layout = mLayouts[item];
         if (mEllipsize == TextUtils.TruncateAt.MARQUEE
                 && mItemWidth < layout.getLineWidth(0)) {
-            mMarquee = new Marquee(this, layout, isRtl(mValues[getSelectedItem()]));
+            mMarquee = new Marquee(this, layout, isRtl(mValues[item]));
             mMarquee.start(mMarqueeRepeatLimit);
         }
 
