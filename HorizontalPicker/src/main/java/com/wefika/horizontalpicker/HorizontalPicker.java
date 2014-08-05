@@ -352,7 +352,7 @@ public class HorizontalPicker extends View {
 
     private void remakeLayout() {
 
-        if (mLayouts != null && mLayouts.length > 0) {
+        if (mLayouts != null && mLayouts.length > 0 && getWidth() > 0)  {
             for (int i = 0; i < mLayouts.length; i++) {
                 mLayouts[i].replaceOrMake(mValues[i], mTextPaint, mItemWidth,
                         Layout.Alignment.ALIGN_CENTER, 1f, 1f, mBoringMetrics, false, mEllipsize,
