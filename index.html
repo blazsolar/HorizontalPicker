@@ -34,6 +34,8 @@
 <p>HorizontalPicker is an open source android library that enables users to select single item
 by scrolling or tapping left and right to move between an array of items.</p>
 
+<p><a href="https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker"><img src="https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker/badge.svg" alt="Maven Central"></a></p>
+
 <h2>
 <a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h2>
 
@@ -42,7 +44,7 @@ by scrolling or tapping left and right to move between an array of items.</p>
 <h2>
 <a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
 
-<pre><code>compile 'com.wefika:horizontal-picker:0.1.0'
+<pre><code>compile 'com.wefika:horizontal-picker:&lt;version&gt;'
 </code></pre>
 
 <h2>
@@ -52,7 +54,13 @@ by scrolling or tapping left and right to move between an array of items.</p>
         <span class="na">xmlns:picker=</span><span class="s">"http://schemas.android.com/apk/res/com.wefika.horizontalpicker"</span>
         <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
         <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
-        <span class="na">picker:values=</span><span class="s">"@array/values"</span> <span class="nt">/&gt;</span>
+        <span class="na">android:textColor=</span><span class="s">"@color/textColor"</span>
+        <span class="na">android:textSize=</span><span class="s">"@dimen/textSize"</span>
+        <span class="na">android:ellipsize=</span><span class="s">"none | start | middle | end | marquee"</span>
+        <span class="na">android:marqueeRepeatLimit=</span><span class="s">"-1"</span>
+        <span class="na">picker:values=</span><span class="s">"@array/values"</span>
+        <span class="na">picker:dividerSize=</span><span class="s">"@dimen/itemPadding"</span>
+        <span class="na">picker:sideItems=</span><span class="s">"@integer/sideItems"</span> <span class="nt">/&gt;</span>
 </pre></div>
 
 <h2>
