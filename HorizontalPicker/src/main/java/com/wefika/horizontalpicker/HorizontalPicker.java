@@ -17,6 +17,7 @@
 package com.wefika.horizontalpicker;
 
 import android.animation.ArgbEvaluator;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -27,6 +28,8 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.text.TextDirectionHeuristicCompat;
+import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.text.BoringLayout;
 import android.text.Layout;
 import android.text.TextPaint;
@@ -114,6 +117,8 @@ public class HorizontalPicker extends View {
     private float mDividerSize = 0;
 
     private int mSideItems = 1;
+
+    private TextDirectionHeuristicCompat mTextDir;
 
     public HorizontalPicker(Context context) {
         this(context, null);
@@ -254,7 +259,11 @@ public class HorizontalPicker extends View {
 
             float lineWidth = layout.getLineWidth(0);
             if (lineWidth > mItemWidth) {
-                x -= (lineWidth - mItemWidth) / 2;
+                if (isRtl(mValues[i])) {
+                    x += (lineWidth - mItemWidth) / 2;
+                } else {
+                    x -= (lineWidth - mItemWidth) / 2;
+                }
             }
 
             if (mMarquee != null && i == selectedItem) {
@@ -293,6 +302,50 @@ public class HorizontalPicker extends View {
 
         drawEdgeEffect(canvas, mLeftEdgeEffect, 270);
         drawEdgeEffect(canvas, mRightEdgeEffect, 90);
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @Override
+    public void onRtlPropertiesChanged(int layoutDirection) {
+        super.onRtlPropertiesChanged(layoutDirection);
+
+        mTextDir = getTextDirectionHeuristic();
+    }
+
+    private boolean isRtl(CharSequence text) {
+        if (mTextDir == null) {
+            mTextDir = getTextDirectionHeuristic();
+        }
+        
+        return mTextDir.isRtl(text, 0, text.length());
+    }
+
+    private TextDirectionHeuristicCompat getTextDirectionHeuristic() {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+
+            return TextDirectionHeuristicsCompat.FIRSTSTRONG_LTR;
+
+        } else {
+
+            // Always need to resolve layout direction first
+            final boolean defaultIsRtl = (getLayoutDirection() == LAYOUT_DIRECTION_RTL);
+
+            switch (getTextDirection()) {
+                default:
+                case TEXT_DIRECTION_FIRST_STRONG:
+                    return (defaultIsRtl ? TextDirectionHeuristicsCompat.FIRSTSTRONG_RTL :
+                            TextDirectionHeuristicsCompat.FIRSTSTRONG_LTR);
+                case TEXT_DIRECTION_ANY_RTL:
+                    return TextDirectionHeuristicsCompat.ANYRTL_LTR;
+                case TEXT_DIRECTION_LTR:
+                    return TextDirectionHeuristicsCompat.LTR;
+                case TEXT_DIRECTION_RTL:
+                    return TextDirectionHeuristicsCompat.RTL;
+                case TEXT_DIRECTION_LOCALE:
+                    return TextDirectionHeuristicsCompat.LOCALE;
+            }
+        }
     }
 
     private void drawEdgeEffect(Canvas canvas, EdgeEffect edgeEffect, int degrees) {
@@ -727,7 +780,7 @@ public class HorizontalPicker extends View {
         Layout layout = mLayouts[getSelectedItem()];
         if (mEllipsize == TextUtils.TruncateAt.MARQUEE
                 && mItemWidth < layout.getLineWidth(0)) {
-            mMarquee = new Marquee(this, layout);
+            mMarquee = new Marquee(this, layout, isRtl(mValues[getSelectedItem()]));
             mMarquee.start(mMarqueeRepeatLimit);
         }
 
@@ -886,11 +939,20 @@ public class HorizontalPicker extends View {
 
         private float mScroll;
 
-        Marquee(HorizontalPicker v, Layout l) {
+        private boolean mRtl;
+
+        Marquee(HorizontalPicker v, Layout l, boolean rtl) {
             final float density = v.getContext().getResources().getDisplayMetrics().density;
-            mScrollUnit = (MARQUEE_PIXELS_PER_SECOND * density) / MARQUEE_RESOLUTION;
+            float scrollUnit = (MARQUEE_PIXELS_PER_SECOND * density) / MARQUEE_RESOLUTION;
+            if (rtl) {
+                mScrollUnit = -scrollUnit;
+            } else {
+                mScrollUnit = scrollUnit;
+            }
+
             mView = new WeakReference<HorizontalPicker>(v);
             mLayout = new WeakReference<Layout>(l);
+            mRtl = rtl;
         }
 
         @Override
@@ -925,8 +987,11 @@ public class HorizontalPicker extends View {
             final Layout layout = mLayout.get();
             if (view != null && layout != null && (view.isFocused() || view.isSelected())) {
                 mScroll += mScrollUnit;
-                if (mScroll > mMaxScroll) {
+                if (Math.abs(mScroll) > mMaxScroll) {
                     mScroll = mMaxScroll;
+                    if (mRtl) {
+                        mScroll *= -1;
+                    }
                     sendEmptyMessageDelayed(MESSAGE_RESTART, MARQUEE_RESTART_DELAY);
                 } else {
                     sendEmptyMessageDelayed(MESSAGE_TICK, MARQUEE_RESOLUTION);
@@ -969,6 +1034,10 @@ public class HorizontalPicker extends View {
                 mFadeStop = lineWidth + textWidth / 6.0f;
                 mMaxFadeScroll = mGhostStart + lineWidth + lineWidth;
 
+                if (mRtl) {
+                    mGhostOffset *= -1;
+                }
+
                 view.invalidate();
                 sendEmptyMessageDelayed(MESSAGE_START, MARQUEE_DELAY);
             }
@@ -991,7 +1060,7 @@ public class HorizontalPicker extends View {
         }
 
         boolean shouldDrawGhost() {
-            return mStatus == MARQUEE_RUNNING && mScroll > mGhostStart;
+            return mStatus == MARQUEE_RUNNING && Math.abs(mScroll) > mGhostStart;
         }
 
         boolean isRunning() {
