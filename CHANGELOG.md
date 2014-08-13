@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 1.0.0 *(2014-08-13)*
+----------------------------
+ * Adding support for padding between items
+ * Adding saved instance state support
+ * Adding support for d-pad key events
+ * Adding support for TalkBack
+
 Version 0.3.0 *(2014-08-04)*
 ----------------------------
 
