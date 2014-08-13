@@ -529,11 +529,7 @@ public class HorizontalPicker extends View {
                         int relativePos = itemPos - mSideItems;
 
                         if (relativePos == 0) {
-                            if(mOnItemSelected != null) {
-                                mOnItemSelected.onItemSelected(getSelectedItem());
-                            }
-
-                            adjustToNearestItemX();
+                            selectItem();
                         } else {
                             smoothScrollBy(relativePos);
                         }
@@ -566,6 +562,14 @@ public class HorizontalPicker extends View {
         return true;
     }
 
+    private void selectItem() {
+        if(mOnItemSelected != null) {
+            mOnItemSelected.onItemSelected(getSelectedItem());
+        }
+
+        adjustToNearestItemX();
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
@@ -576,7 +580,7 @@ public class HorizontalPicker extends View {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
-                smoothScrollBy(0);
+                selectItem();
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 smoothScrollBy(-1);
