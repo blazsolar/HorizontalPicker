@@ -26,12 +26,16 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.text.TextDirectionHeuristicCompat;
 import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
+import android.support.v4.widget.ExploreByTouchHelper;
 import android.text.BoringLayout;
 import android.text.Layout;
 import android.text.TextPaint;
@@ -41,11 +45,13 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.EdgeEffect;
 import android.widget.OverScroller;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
  * Created by Blaž Šolar on 24/01/14.
@@ -121,6 +127,8 @@ public class HorizontalPicker extends View {
     private int mSideItems = 1;
 
     private TextDirectionHeuristicCompat mTextDir;
+
+    private final PickerTouchHelper mTouchHelper;
 
     public HorizontalPicker(Context context) {
         this(context, null);
@@ -205,6 +213,9 @@ public class HorizontalPicker extends View {
 
         setValues(values);
         setSideItems(sideItems);
+
+        mTouchHelper = new PickerTouchHelper(this);
+        ViewCompat.setAccessibilityDelegate(this, mTouchHelper);
 
     }
 
@@ -552,6 +563,16 @@ public class HorizontalPicker extends View {
         }
 
         return true;
+    }
+
+    @Override
+    protected boolean dispatchHoverEvent(MotionEvent event) {
+
+        if (mTouchHelper.dispatchHoverEvent(event)) {
+            return true;
+        }
+
+        return super.dispatchHoverEvent(event);
     }
 
     @Override
@@ -1140,6 +1161,85 @@ public class HorizontalPicker extends View {
                     + " selItem=" + mSelItem
                     + "}";
         }
+    }
+
+    private static class PickerTouchHelper extends ExploreByTouchHelper {
+
+        private HorizontalPicker mPicker;
+
+        public PickerTouchHelper(HorizontalPicker picker) {
+            super(picker);
+            mPicker = picker;
+        }
+
+        @Override
+        protected int getVirtualViewAt(float x, float y) {
+
+            float itemWidth = mPicker.mItemWidth + mPicker.mDividerSize;
+            float position = mPicker.getScrollX() + x - itemWidth * mPicker.mSideItems;
+
+            float item = position / itemWidth;
+
+            if (item < 0 || item > mPicker.mValues.length) {
+                return INVALID_ID;
+            }
+
+            return (int) item;
+
+        }
+
+        @Override
+        protected void getVisibleVirtualViews(List<Integer> virtualViewIds) {
+
+            float itemWidth = mPicker.mItemWidth + mPicker.mDividerSize;
+            float position = mPicker.getScrollX() - itemWidth * mPicker.mSideItems;
+
+            int first = (int) (position / itemWidth);
+
+            int items = mPicker.mSideItems * 2 + 1;
+
+            if (position % itemWidth != 0) { // if start next item is starting to appear on screen
+                items++;
+            }
+
+            if (first < 0) {
+                items += first;
+                first = 0;
+            } else if (first + items > mPicker.mValues.length) {
+                items = mPicker.mValues.length - first;
+            }
+
+            for (int i = 0; i < items; i++) {
+                virtualViewIds.add(first + i);
+            }
+
+        }
+
+        @Override
+        protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event) {
+            event.setContentDescription(mPicker.mValues[virtualViewId]);
+        }
+
+        @Override
+        protected void onPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat node) {
+
+            float itemWidth = mPicker.mItemWidth + mPicker.mDividerSize;
+            float scrollOffset = mPicker.getScrollX() - itemWidth * mPicker.mSideItems;
+
+            int left = (int) (virtualViewId * itemWidth - scrollOffset);
+            int right = left + mPicker.mItemWidth;
+
+            node.setContentDescription(mPicker.mValues[virtualViewId]);
+            node.setBoundsInParent(new Rect(left, 0, right, mPicker.getHeight()));
+            node.addAction(AccessibilityNodeInfoCompat.ACTION_CLICK);
+
+        }
+
+        @Override
+        protected boolean onPerformActionForVirtualView(int virtualViewId, int action, Bundle arguments) {
+            return false;
+        }
+
     }
 
 }
