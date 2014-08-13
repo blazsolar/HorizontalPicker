@@ -29,10 +29,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.text.TextDirectionHeuristicCompat;
-import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.text.TextDirectionHeuristicCompat;
+import android.support.v4.text.TextDirectionHeuristicsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.support.v4.widget.ExploreByTouchHelper;
@@ -41,6 +41,7 @@ import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -563,6 +564,30 @@ public class HorizontalPicker extends View {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (!isEnabled()) {
+            return super.onKeyDown(keyCode, event);
+        }
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+                smoothScrollBy(0);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                smoothScrollBy(-1);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                smoothScrollBy(1);
+                return true;
+            default:
+                return super.onKeyDown(keyCode, event);
+        }
+
     }
 
     @Override
