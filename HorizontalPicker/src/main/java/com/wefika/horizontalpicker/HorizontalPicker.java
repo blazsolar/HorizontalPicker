@@ -864,6 +864,7 @@ public class HorizontalPicker extends View {
 
         adjustToNearestItemX();
         mScrollingX = false;
+        mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
 
         startMarqueeIfNeeded();
     }
