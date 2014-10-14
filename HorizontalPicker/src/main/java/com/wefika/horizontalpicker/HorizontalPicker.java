@@ -114,6 +114,7 @@ public class HorizontalPicker extends View {
     private ColorStateList mTextColor;
 
     private OnItemSelected mOnItemSelected;
+    private OnItemClicked mOnItemClicked;
 
     private int mSelectedItem;
 
@@ -563,8 +564,9 @@ public class HorizontalPicker extends View {
     }
 
     private void selectItem() {
-        if(mOnItemSelected != null) {
-            mOnItemSelected.onItemSelected(getSelectedItem());
+
+        if (mOnItemClicked != null) {
+            mOnItemClicked.onItemClicked(getSelectedItem());
         }
 
         adjustToNearestItemX();
@@ -616,6 +618,10 @@ public class HorizontalPicker extends View {
 
     public void setOnItemSelectedListener(OnItemSelected onItemSelected) {
         mOnItemSelected = onItemSelected;
+    }
+
+    public void setOnItemClickedListener(OnItemClicked onItemClicked) {
+        mOnItemClicked = onItemClicked;
     }
 
     public int getSelectedItem() {
@@ -865,6 +871,10 @@ public class HorizontalPicker extends View {
         adjustToNearestItemX();
         mScrollingX = false;
 
+        if (mOnItemSelected != null) {
+            mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
+        }
+
         startMarqueeIfNeeded();
     }
 
@@ -1002,6 +1012,12 @@ public class HorizontalPicker extends View {
     public interface OnItemSelected {
 
         public void onItemSelected(int index);
+
+    }
+
+    public interface OnItemClicked {
+
+        public void onItemClicked(int index);
 
     }
 
