@@ -564,9 +564,7 @@ public class HorizontalPicker extends View {
     }
 
     private void selectItem() {
-        if (mOnItemSelected != null) {
-            mOnItemSelected.onItemSelected(getSelectedItem());
-        }
+
         if (mOnItemClicked != null) {
             mOnItemClicked.onItemClicked(getSelectedItem());
         }
