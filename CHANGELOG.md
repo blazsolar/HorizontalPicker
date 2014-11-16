@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 1.0.1 *(2014-11-16)*
+----------------------------
+ * `onItemSelectedListener` is now triggered when horizontal picker scrolls to certain item.
+ * Added `setOnItemClickedListener` that is triggered when user clicks on selected item.
+
 Version 1.0.0 *(2014-08-13)*
 ----------------------------
  * Adding support for padding between items
