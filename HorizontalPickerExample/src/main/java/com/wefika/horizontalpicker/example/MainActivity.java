@@ -18,12 +18,29 @@ package com.wefika.horizontalpicker.example;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.wefika.horizontalpicker.HorizontalPicker;
+
+public class MainActivity extends Activity implements HorizontalPicker.OnItemSelected, HorizontalPicker.OnItemClicked {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        HorizontalPicker picker = (HorizontalPicker) findViewById(R.id.picker);
+        picker.setOnItemClickedListener(this);
+        picker.setOnItemSelectedListener(this);
+    }
+
+    @Override
+    public void onItemSelected(int index)    {
+        Toast.makeText(this, "Item selected", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onItemClicked(int index) {
+        Toast.makeText(this, "Item clicked", Toast.LENGTH_SHORT).show();
     }
 }
