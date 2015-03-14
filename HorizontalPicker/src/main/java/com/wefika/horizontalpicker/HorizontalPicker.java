@@ -564,9 +564,14 @@ public class HorizontalPicker extends View {
     }
 
     private void selectItem() {
-
+        // post to the UI Thread to avoid potential interference with the OpenGL Thread
         if (mOnItemClicked != null) {
-            mOnItemClicked.onItemClicked(getSelectedItem());
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnItemClicked.onItemClicked(getSelectedItem());
+                }
+            });
         }
 
         adjustToNearestItemX();
@@ -870,12 +875,16 @@ public class HorizontalPicker extends View {
 
         adjustToNearestItemX();
         mScrollingX = false;
-
-        if (mOnItemSelected != null) {
-            mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
-        }
-
         startMarqueeIfNeeded();
+        // post to the UI Thread to avoid potential interference with the OpenGL Thread
+        if (mOnItemSelected != null) {
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
+                }
+            });
+        }
     }
 
     private void startMarqueeIfNeeded() {
@@ -970,7 +979,7 @@ public class HorizontalPicker extends View {
      */
     private void scrollToItem(int index) {
         scrollTo((mItemWidth + (int) mDividerSize) * index, 0);
-        invalidate();
+        // invalidate() not needed because scrollTo() already invalidates the view
     }
 
     /**
