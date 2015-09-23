@@ -260,57 +260,59 @@ public class HorizontalPicker extends View {
         // translate horizontal to center
         canvas.translate(itemWithPadding * mSideItems, 0);
 
-        for (int i = 0; i < mValues.length; i++) {
+        if (mValues != null) {
+            for (int i = 0; i < mValues.length; i++) {
 
-            // set text color for item
-            mTextPaint.setColor(getTextColor(i));
+                // set text color for item
+                mTextPaint.setColor(getTextColor(i));
 
-            // get text layout
-            BoringLayout layout = mLayouts[i];
+                // get text layout
+                BoringLayout layout = mLayouts[i];
 
-            int saveCountHeight = canvas.getSaveCount();
-            canvas.save();
+                int saveCountHeight = canvas.getSaveCount();
+                canvas.save();
 
-            float x = 0;
+                float x = 0;
 
-            float lineWidth = layout.getLineWidth(0);
-            if (lineWidth > mItemWidth) {
-                if (isRtl(mValues[i])) {
-                    x += (lineWidth - mItemWidth) / 2;
-                } else {
-                    x -= (lineWidth - mItemWidth) / 2;
+                float lineWidth = layout.getLineWidth(0);
+                if (lineWidth > mItemWidth) {
+                    if (isRtl(mValues[i])) {
+                        x += (lineWidth - mItemWidth) / 2;
+                    } else {
+                        x -= (lineWidth - mItemWidth) / 2;
+                    }
                 }
-            }
 
-            if (mMarquee != null && i == selectedItem) {
-                x += mMarquee.getScroll();
-            }
+                if (mMarquee != null && i == selectedItem) {
+                    x += mMarquee.getScroll();
+                }
 
-            // translate vertically to center
-            canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
+                // translate vertically to center
+                canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
 
-            RectF clipBounds;
-            if (x == 0) {
-                clipBounds = mItemClipBounds;
-            } else {
-                clipBounds = mItemClipBoundsOffser;
-                clipBounds.set(mItemClipBounds);
-                clipBounds.offset(x, 0);
-            }
+                RectF clipBounds;
+                if (x == 0) {
+                    clipBounds = mItemClipBounds;
+                } else {
+                    clipBounds = mItemClipBoundsOffser;
+                    clipBounds.set(mItemClipBounds);
+                    clipBounds.offset(x, 0);
+                }
 
-            canvas.clipRect(clipBounds);
-            layout.draw(canvas);
-
-            if (mMarquee != null && i == selectedItem && mMarquee.shouldDrawGhost()) {
-                canvas.translate(mMarquee.getGhostOffset(), 0);
+                canvas.clipRect(clipBounds);
                 layout.draw(canvas);
+
+                if (mMarquee != null && i == selectedItem && mMarquee.shouldDrawGhost()) {
+                    canvas.translate(mMarquee.getGhostOffset(), 0);
+                    layout.draw(canvas);
+                }
+
+                // restore vertical translation
+                canvas.restoreToCount(saveCountHeight);
+
+                // translate horizontal for 1 item
+                canvas.translate(itemWithPadding, 0);
             }
-
-            // restore vertical translation
-            canvas.restoreToCount(saveCountHeight);
-
-            // translate horizontal for 1 item
-            canvas.translate(itemWithPadding, 0);
         }
 
         // restore horizontal translation
@@ -465,7 +467,8 @@ public class HorizontalPicker extends View {
 
                 int deltaMoveX = (int) (mLastDownEventX - currentMoveX);
 
-                if(mScrollingX || (Math.abs(deltaMoveX) > mTouchSlop)) {
+                if(mScrollingX ||
+                        (Math.abs(deltaMoveX) > mTouchSlop) && mValues != null && mValues.length > 0) {
 
                     if(!mScrollingX) {
                         deltaMoveX = 0;
@@ -526,7 +529,7 @@ public class HorizontalPicker extends View {
 
                 if(mScrollingX && Math.abs(initialVelocityX) > mMinimumFlingVelocity) {
                     flingX(initialVelocityX);
-                } else {
+                } else if (mValues != null) {
                     float positionX = event.getX();
                     if(!mScrollingX) {
 
@@ -662,17 +665,6 @@ public class HorizontalPicker extends View {
         }
     }
 
-    @Override
-    public void scrollBy(int x, int y) {
-        super.scrollBy(x, 0);
-    }
-
-    @Override
-    public void scrollTo(int x, int y) {
-//        x = getInBoundsX(x);
-        super.scrollTo(x, y);
-    }
-
     /**
      * @return
      */
@@ -689,14 +681,14 @@ public class HorizontalPicker extends View {
         if (mValues != values) {
             mValues = values;
 
-            if (mValues == null) {
-                mValues = new CharSequence[0];
-            }
-
-            mLayouts = new BoringLayout[mValues.length];
-            for (int i = 0; i < mLayouts.length; i++) {
-                mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
-                        1f, 1f, mBoringMetrics, false, mEllipsize, mItemWidth);
+            if (mValues != null) {
+                mLayouts = new BoringLayout[mValues.length];
+                for (int i = 0; i < mLayouts.length; i++) {
+                    mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
+                            1f, 1f, mBoringMetrics, false, mEllipsize, mItemWidth);
+                }
+            } else {
+                mLayouts = new BoringLayout[0];
             }
 
             // start marque only if has already been measured
@@ -887,11 +879,14 @@ public class HorizontalPicker extends View {
         stopMarqueeIfNeeded();
 
         int item = getSelectedItem();
-        Layout layout = mLayouts[item];
-        if (mEllipsize == TextUtils.TruncateAt.MARQUEE
-                && mItemWidth < layout.getLineWidth(0)) {
-            mMarquee = new Marquee(this, layout, isRtl(mValues[item]));
-            mMarquee.start(mMarqueeRepeatLimit);
+
+        if (mLayouts != null && mLayouts.length > item) {
+            Layout layout = mLayouts[item];
+            if (mEllipsize == TextUtils.TruncateAt.MARQUEE
+                    && mItemWidth < layout.getLineWidth(0)) {
+                mMarquee = new Marquee(this, layout, isRtl(mValues[item]));
+                mMarquee.start(mMarqueeRepeatLimit);
+            }
         }
 
     }
