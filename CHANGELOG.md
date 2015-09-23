@@ -9,6 +9,7 @@ Version 1.1.0 *(?)*
  * Overscroll is not affected by view padding any more.
  * Fixing issue where saving view state would cause picker to crash.
  * Setting default text color if it is not specified.
+ * Fixing issue with older devices onDraw command
 
 Version 1.0.1 *(2014-11-16)*
 ----------------------------
