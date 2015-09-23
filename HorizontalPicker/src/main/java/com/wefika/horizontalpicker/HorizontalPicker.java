@@ -392,14 +392,14 @@ public class HorizontalPicker extends View {
         if(!edgeEffect.isFinished()) {
             final int restoreCount = canvas.getSaveCount();
             final int width = getWidth();
-            final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+            final int height = getHeight();
 
             canvas.rotate(degrees);
 
             if (degrees == 270) {
-                canvas.translate(-height + getPaddingTop(), Math.max(0, getScrollX()));
+                canvas.translate(-height, Math.max(0, getScrollX()));
             } else { // 90
-                canvas.translate(-getPaddingTop(), -(Math.max(getScrollRange(), getScaleX()) + width));
+                canvas.translate(0, -(Math.max(getScrollRange(), getScaleX()) + width));
             }
 
             edgeEffect.setSize(height, width);
