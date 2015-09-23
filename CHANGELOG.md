@@ -8,6 +8,7 @@ Version 1.1.0 *(?)*
  * Fixing issue where picker would crash if overscroll was disabled.
  * Overscroll is not affected by view padding any more.
  * Fixing issue where saving view state would cause picker to crash.
+ * Setting default text color if it is not specified.
 
 Version 1.0.1 *(2014-11-16)*
 ----------------------------
