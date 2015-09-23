@@ -1191,6 +1191,11 @@ public class HorizontalPicker extends View {
             super(superState);
         }
 
+        private SavedState(Parcel in) {
+            super(in);
+            mSelItem = in.readInt();
+        }
+
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
@@ -1205,6 +1210,18 @@ public class HorizontalPicker extends View {
                     + " selItem=" + mSelItem
                     + "}";
         }
+
+        @SuppressWarnings("hiding")
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 
     private static class PickerTouchHelper extends ExploreByTouchHelper {
