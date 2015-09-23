@@ -160,6 +160,10 @@ public class HorizontalPicker extends View {
 
         try {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
+            if (mTextColor == null) {
+                mTextColor = ColorStateList.valueOf(0xFF000000);
+            }
+
             values = a.getTextArray(R.styleable.HorizontalPicker_values);
             ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
             mMarqueeRepeatLimit = a.getInt(R.styleable.HorizontalPicker_android_marqueeRepeatLimit, mMarqueeRepeatLimit);
