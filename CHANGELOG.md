@@ -7,6 +7,7 @@ Version 1.1.0 *(?)*
  * Fixing issue where picker would crash if no items were passed to it.
  * Fixing issue where picker would crash if overscroll was disabled.
  * Overscroll is not affected by view padding any more.
+ * Fixing issue where saving view state would cause picker to crash.
 
 Version 1.0.1 *(2014-11-16)*
 ----------------------------
