@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 1.1.0 *(?)*
+----------------------------
+ * Fixing issue where picker would not show in scroll view.
+ * Fixing issue where picker would crash if no items were passed to it.
+
 Version 1.0.1 *(2014-11-16)*
 ----------------------------
  * `onItemSelectedListener` is now triggered when horizontal picker scrolls to certain item.
