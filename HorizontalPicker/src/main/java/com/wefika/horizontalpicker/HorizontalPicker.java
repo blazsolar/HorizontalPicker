@@ -236,7 +236,11 @@ public class HorizontalPicker extends View {
             int heightText = (int) (Math.abs(fontMetrics.ascent) + Math.abs(fontMetrics.descent));
             heightText += getPaddingTop() + getPaddingBottom();
 
-            height = Math.min(heightSize, heightText);
+            if (heightMode == MeasureSpec.AT_MOST) {
+                height = Math.min(heightSize, heightText);
+            } else {
+                height = heightText;
+            }
         }
 
         setMeasuredDimension(width, height);
