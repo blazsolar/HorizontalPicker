@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 1.1.0 *(?)*
+Version 1.1.0 *(24.09.2015)*
 ----------------------------
  * Fixing issue where picker would not show in scroll view.
  * Fixing issue where picker would crash if no items were passed to it.
