@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version 1.1.0 *(24.09.2015)*
+----------------------------
+ * Fixing issue where picker would not show in scroll view.
+ * Fixing issue where picker would crash if no items were passed to it.
+ * Fixing issue where picker would crash if overscroll was disabled.
+ * Overscroll is not affected by view padding any more.
+ * Fixing issue where saving view state would cause picker to crash.
+ * Setting default text color if it is not specified.
+ * Fixing issue with older devices onDraw command
+
 Version 1.0.1 *(2014-11-16)*
 ----------------------------
  * `onItemSelectedListener` is now triggered when horizontal picker scrolls to certain item.

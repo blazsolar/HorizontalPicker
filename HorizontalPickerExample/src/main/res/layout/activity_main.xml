@@ -33,9 +33,9 @@
         android:paddingBottom="16dp"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="2"
-        app:values="@array/values"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        app:values="@array/values"
         app:dividerSize="10dp"
         app:sideItems="@integer/numSideItems"/>
 

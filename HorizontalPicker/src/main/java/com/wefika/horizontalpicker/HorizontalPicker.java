@@ -160,6 +160,10 @@ public class HorizontalPicker extends View {
 
         try {
             mTextColor = a.getColorStateList(R.styleable.HorizontalPicker_android_textColor);
+            if (mTextColor == null) {
+                mTextColor = ColorStateList.valueOf(0xFF000000);
+            }
+
             values = a.getTextArray(R.styleable.HorizontalPicker_values);
             ellipsize = a.getInt(R.styleable.HorizontalPicker_android_ellipsize, ellipsize);
             mMarqueeRepeatLimit = a.getInt(R.styleable.HorizontalPicker_android_marqueeRepeatLimit, mMarqueeRepeatLimit);
@@ -236,7 +240,11 @@ public class HorizontalPicker extends View {
             int heightText = (int) (Math.abs(fontMetrics.ascent) + Math.abs(fontMetrics.descent));
             heightText += getPaddingTop() + getPaddingBottom();
 
-            height = Math.min(heightSize, heightText);
+            if (heightMode == MeasureSpec.AT_MOST) {
+                height = Math.min(heightSize, heightText);
+            } else {
+                height = heightText;
+            }
         }
 
         setMeasuredDimension(width, height);
@@ -256,57 +264,59 @@ public class HorizontalPicker extends View {
         // translate horizontal to center
         canvas.translate(itemWithPadding * mSideItems, 0);
 
-        for (int i = 0; i < mValues.length; i++) {
+        if (mValues != null) {
+            for (int i = 0; i < mValues.length; i++) {
 
-            // set text color for item
-            mTextPaint.setColor(getTextColor(i));
+                // set text color for item
+                mTextPaint.setColor(getTextColor(i));
 
-            // get text layout
-            BoringLayout layout = mLayouts[i];
+                // get text layout
+                BoringLayout layout = mLayouts[i];
 
-            int saveCountHeight = canvas.getSaveCount();
-            canvas.save();
+                int saveCountHeight = canvas.getSaveCount();
+                canvas.save();
 
-            float x = 0;
+                float x = 0;
 
-            float lineWidth = layout.getLineWidth(0);
-            if (lineWidth > mItemWidth) {
-                if (isRtl(mValues[i])) {
-                    x += (lineWidth - mItemWidth) / 2;
-                } else {
-                    x -= (lineWidth - mItemWidth) / 2;
+                float lineWidth = layout.getLineWidth(0);
+                if (lineWidth > mItemWidth) {
+                    if (isRtl(mValues[i])) {
+                        x += (lineWidth - mItemWidth) / 2;
+                    } else {
+                        x -= (lineWidth - mItemWidth) / 2;
+                    }
                 }
-            }
 
-            if (mMarquee != null && i == selectedItem) {
-                x += mMarquee.getScroll();
-            }
+                if (mMarquee != null && i == selectedItem) {
+                    x += mMarquee.getScroll();
+                }
 
-            // translate vertically to center
-            canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
+                // translate vertically to center
+                canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
 
-            RectF clipBounds;
-            if (x == 0) {
-                clipBounds = mItemClipBounds;
-            } else {
-                clipBounds = mItemClipBoundsOffser;
-                clipBounds.set(mItemClipBounds);
-                clipBounds.offset(x, 0);
-            }
+                RectF clipBounds;
+                if (x == 0) {
+                    clipBounds = mItemClipBounds;
+                } else {
+                    clipBounds = mItemClipBoundsOffser;
+                    clipBounds.set(mItemClipBounds);
+                    clipBounds.offset(x, 0);
+                }
 
-            canvas.clipRect(clipBounds);
-            layout.draw(canvas);
-
-            if (mMarquee != null && i == selectedItem && mMarquee.shouldDrawGhost()) {
-                canvas.translate(mMarquee.getGhostOffset(), 0);
+                canvas.clipRect(clipBounds);
                 layout.draw(canvas);
+
+                if (mMarquee != null && i == selectedItem && mMarquee.shouldDrawGhost()) {
+                    canvas.translate(mMarquee.getGhostOffset(), 0);
+                    layout.draw(canvas);
+                }
+
+                // restore vertical translation
+                canvas.restoreToCount(saveCountHeight);
+
+                // translate horizontal for 1 item
+                canvas.translate(itemWithPadding, 0);
             }
-
-            // restore vertical translation
-            canvas.restoreToCount(saveCountHeight);
-
-            // translate horizontal for 1 item
-            canvas.translate(itemWithPadding, 0);
         }
 
         // restore horizontal translation
@@ -386,14 +396,14 @@ public class HorizontalPicker extends View {
         if(!edgeEffect.isFinished()) {
             final int restoreCount = canvas.getSaveCount();
             final int width = getWidth();
-            final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+            final int height = getHeight();
 
             canvas.rotate(degrees);
 
             if (degrees == 270) {
-                canvas.translate(-height + getPaddingTop(), Math.max(0, getScrollX()));
+                canvas.translate(-height, Math.max(0, getScrollX()));
             } else { // 90
-                canvas.translate(-getPaddingTop(), -(Math.max(getScrollRange(), getScaleX()) + width));
+                canvas.translate(0, -(Math.max(getScrollRange(), getScaleX()) + width));
             }
 
             edgeEffect.setSize(height, width);
@@ -461,7 +471,8 @@ public class HorizontalPicker extends View {
 
                 int deltaMoveX = (int) (mLastDownEventX - currentMoveX);
 
-                if(mScrollingX || (Math.abs(deltaMoveX) > mTouchSlop)) {
+                if(mScrollingX ||
+                        (Math.abs(deltaMoveX) > mTouchSlop) && mValues != null && mValues.length > 0) {
 
                     if(!mScrollingX) {
                         deltaMoveX = 0;
@@ -522,7 +533,7 @@ public class HorizontalPicker extends View {
 
                 if(mScrollingX && Math.abs(initialVelocityX) > mMinimumFlingVelocity) {
                     flingX(initialVelocityX);
-                } else {
+                } else if (mValues != null) {
                     float positionX = event.getX();
                     if(!mScrollingX) {
 
@@ -564,9 +575,14 @@ public class HorizontalPicker extends View {
     }
 
     private void selectItem() {
-
+        // post to the UI Thread to avoid potential interference with the OpenGL Thread
         if (mOnItemClicked != null) {
-            mOnItemClicked.onItemClicked(getSelectedItem());
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnItemClicked.onItemClicked(getSelectedItem());
+                }
+            });
         }
 
         adjustToNearestItemX();
@@ -658,17 +674,6 @@ public class HorizontalPicker extends View {
         }
     }
 
-    @Override
-    public void scrollBy(int x, int y) {
-        super.scrollBy(x, 0);
-    }
-
-    @Override
-    public void scrollTo(int x, int y) {
-//        x = getInBoundsX(x);
-        super.scrollTo(x, y);
-    }
-
     /**
      * @return
      */
@@ -685,14 +690,14 @@ public class HorizontalPicker extends View {
         if (mValues != values) {
             mValues = values;
 
-            if (mValues == null) {
-                mValues = new CharSequence[0];
-            }
-
-            mLayouts = new BoringLayout[mValues.length];
-            for (int i = 0; i < mLayouts.length; i++) {
-                mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
-                        1f, 1f, mBoringMetrics, false, mEllipsize, mItemWidth);
+            if (mValues != null) {
+                mLayouts = new BoringLayout[mValues.length];
+                for (int i = 0; i < mLayouts.length; i++) {
+                    mLayouts[i] = new BoringLayout(mValues[i], mTextPaint, mItemWidth, Layout.Alignment.ALIGN_CENTER,
+                            1f, 1f, mBoringMetrics, false, mEllipsize, mItemWidth);
+                }
+            } else {
+                mLayouts = new BoringLayout[0];
             }
 
             // start marque only if has already been measured
@@ -870,12 +875,16 @@ public class HorizontalPicker extends View {
 
         adjustToNearestItemX();
         mScrollingX = false;
-
-        if (mOnItemSelected != null) {
-            mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
-        }
-
         startMarqueeIfNeeded();
+        // post to the UI Thread to avoid potential interference with the OpenGL Thread
+        if (mOnItemSelected != null) {
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mOnItemSelected.onItemSelected(getPositionFromCoordinates(getScrollX()));
+                }
+            });
+        }
     }
 
     private void startMarqueeIfNeeded() {
@@ -883,11 +892,14 @@ public class HorizontalPicker extends View {
         stopMarqueeIfNeeded();
 
         int item = getSelectedItem();
-        Layout layout = mLayouts[item];
-        if (mEllipsize == TextUtils.TruncateAt.MARQUEE
-                && mItemWidth < layout.getLineWidth(0)) {
-            mMarquee = new Marquee(this, layout, isRtl(mValues[item]));
-            mMarquee.start(mMarqueeRepeatLimit);
+
+        if (mLayouts != null && mLayouts.length > item) {
+            Layout layout = mLayouts[item];
+            if (mEllipsize == TextUtils.TruncateAt.MARQUEE
+                    && mItemWidth < layout.getLineWidth(0)) {
+                mMarquee = new Marquee(this, layout, isRtl(mValues[item]));
+                mMarquee.start(mMarqueeRepeatLimit);
+            }
         }
 
     }
@@ -970,7 +982,7 @@ public class HorizontalPicker extends View {
      */
     private void scrollToItem(int index) {
         scrollTo((mItemWidth + (int) mDividerSize) * index, 0);
-        invalidate();
+        // invalidate() not needed because scrollTo() already invalidates the view
     }
 
     /**
@@ -1192,6 +1204,11 @@ public class HorizontalPicker extends View {
             super(superState);
         }
 
+        private SavedState(Parcel in) {
+            super(in);
+            mSelItem = in.readInt();
+        }
+
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             super.writeToParcel(dest, flags);
@@ -1206,6 +1223,18 @@ public class HorizontalPicker extends View {
                     + " selItem=" + mSelItem
                     + "}";
         }
+
+        @SuppressWarnings("hiding")
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 
     private static class PickerTouchHelper extends ExploreByTouchHelper {
