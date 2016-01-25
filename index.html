@@ -6,8 +6,8 @@
     <title>HorizontalPicker by blazsolar</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -29,7 +29,7 @@
       </header>
       <section>
         <h1>
-<a name="horizontalpicker" class="anchor" href="#horizontalpicker"><span class="octicon octicon-link"></span></a>HorizontalPicker</h1>
+<a id="horizontalpicker" class="anchor" href="#horizontalpicker" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>HorizontalPicker</h1>
 
 <p>HorizontalPicker is an open source android library that enables users to select single item
 by scrolling or tapping left and right to move between an array of items.</p>
@@ -37,34 +37,33 @@ by scrolling or tapping left and right to move between an array of items.</p>
 <p><a href="https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker"><img src="https://maven-badges.herokuapp.com/maven-central/com.wefika/horizontal-picker/badge.svg" alt="Maven Central"></a></p>
 
 <h2>
-<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h2>
 
-<p><img src="https://raw2.github.com/blazsolar/HorizontalPicker/master/images/screen.gif" alt="screen recording" title="Screen recording"></p>
+<p><img src="images/screen.gif" alt="screen recording" title="Screen recording"></p>
 
 <h2>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dependencies</h2>
 
 <pre><code>compile 'com.wefika:horizontal-picker:&lt;version&gt;'
 </code></pre>
 
 <h2>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
-<div class="highlight highlight-xml"><pre><span class="nt">&lt;com.wefika.horizontalpicker.HorizontalPicker</span>
-        <span class="na">xmlns:picker=</span><span class="s">"http://schemas.android.com/apk/res/com.wefika.horizontalpicker"</span>
-        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
-        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
-        <span class="na">android:textColor=</span><span class="s">"@color/textColor"</span>
-        <span class="na">android:textSize=</span><span class="s">"@dimen/textSize"</span>
-        <span class="na">android:ellipsize=</span><span class="s">"none | start | middle | end | marquee"</span>
-        <span class="na">android:marqueeRepeatLimit=</span><span class="s">"-1"</span>
-        <span class="na">picker:values=</span><span class="s">"@array/values"</span>
-        <span class="na">picker:dividerSize=</span><span class="s">"@dimen/itemPadding"</span>
-        <span class="na">picker:sideItems=</span><span class="s">"@integer/sideItems"</span> <span class="nt">/&gt;</span>
-</pre></div>
+<div class="highlight highlight-text-xml"><pre>&lt;<span class="pl-ent">com</span>.wefika.horizontalpicker.HorizontalPicker
+        <span class="pl-e">xmlns</span><span class="pl-e">:</span><span class="pl-e">picker</span>=<span class="pl-s"><span class="pl-pds">"</span>http://schemas.android.com/apk/res/com.wefika.horizontalpicker<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">layout_width</span>=<span class="pl-s"><span class="pl-pds">"</span>match_parent<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">layout_height</span>=<span class="pl-s"><span class="pl-pds">"</span>wrap_content<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">textColor</span>=<span class="pl-s"><span class="pl-pds">"</span>@color/textColor<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">textSize</span>=<span class="pl-s"><span class="pl-pds">"</span>@dimen/textSize<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">ellipsize</span>=<span class="pl-s"><span class="pl-pds">"</span>none | start | middle | end | marquee<span class="pl-pds">"</span></span>
+        <span class="pl-e">android</span><span class="pl-e">:</span><span class="pl-e">marqueeRepeatLimit</span>=<span class="pl-s"><span class="pl-pds">"</span>-1<span class="pl-pds">"</span></span>
+        <span class="pl-e">picker</span><span class="pl-e">:</span><span class="pl-e">values</span>=<span class="pl-s"><span class="pl-pds">"</span>@array/values<span class="pl-pds">"</span></span>
+        <span class="pl-e">picker</span><span class="pl-e">:</span><span class="pl-e">dividerSize</span>=<span class="pl-s"><span class="pl-pds">"</span>@dimen/itemPadding<span class="pl-pds">"</span></span>
+        <span class="pl-e">picker</span><span class="pl-e">:</span><span class="pl-e">sideItems</span>=<span class="pl-s"><span class="pl-pds">"</span>@integer/sideItems<span class="pl-pds">"</span></span> /&gt;</pre></div>
 
 <h2>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
 <pre><code>Copyright 2014 Blaž Šolar
 
