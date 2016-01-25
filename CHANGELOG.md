@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 1.1.1 *(25.01.2016)*
+----------------------------
+ * Updating ScrollView support
+ * Minor updates
+
 Version 1.1.0 *(24.09.2015)*
 ----------------------------
  * Fixing issue where picker would not show in scroll view.
