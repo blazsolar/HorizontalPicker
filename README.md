@@ -14,7 +14,7 @@ Example
 Dependencies
 ------------
 
-    compile 'com.wefika:horizontal-picker:1.1.0'
+    compile 'com.wefika:horizontal-picker:1.1.1'
 
 Usage
 -----
