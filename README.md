@@ -9,7 +9,7 @@ by scrolling or tapping left and right to move between an array of items.
 
 Example
 -------
-![screen recording](https://raw.githubusercontent.com/blazsolar/HorizontalPicker/develop/images/screen.gif "Screen recording")
+![screen recording](images/screen.gif "Screen recording")
 
 Dependencies
 ------------
