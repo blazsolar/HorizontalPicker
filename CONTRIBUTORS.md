@@ -8,6 +8,9 @@
 
 * naweinberger
   * Added `onItemClicked` functionality.
+ 
+* Sviatoslav Kostenko sviatoslav.kostenko@gmail.com
+  * Added ability to insert values programmatically.
 
 In chronological order:
 
