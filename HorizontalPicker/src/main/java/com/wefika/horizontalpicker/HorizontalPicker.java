@@ -848,7 +848,6 @@ public class HorizontalPicker extends View {
             }
 
             postInvalidate();
-//            postInvalidateOnAnimation(); // TODO
         }
     }
 
@@ -1024,7 +1023,13 @@ public class HorizontalPicker extends View {
      * @return Selected item from scrolling position in {param x}
      */
     private int getPositionFromCoordinates(int x) {
-        return Math.round(x / (itemWidth + dividerSize)) % values.length;
+        int position = Math.round(x / (itemWidth + dividerSize)) % values.length;
+
+        if (position < 0) {
+            position = values.length + position;
+        }
+
+        return position;
     }
 
     /**
@@ -1104,7 +1109,7 @@ public class HorizontalPicker extends View {
 
     public interface OnItemClicked {
 
-        public void onItemClicked(int index);
+        void onItemClicked(int index);
 
     }
 
@@ -1149,8 +1154,8 @@ public class HorizontalPicker extends View {
                 mScrollUnit = scrollUnit;
             }
 
-            mView = new WeakReference<HorizontalPicker>(v);
-            mLayout = new WeakReference<Layout>(l);
+            mView = new WeakReference<>(v);
+            mLayout = new WeakReference<>(l);
             mRtl = rtl;
         }
 
