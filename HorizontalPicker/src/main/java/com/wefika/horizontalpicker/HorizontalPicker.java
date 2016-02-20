@@ -132,6 +132,8 @@ public class HorizontalPicker extends View {
 
     private final PickerTouchHelper touchHelper;
 
+    private boolean infinate = true;
+
     public HorizontalPicker(Context context) {
         this(context, null);
     }
@@ -254,65 +256,32 @@ public class HorizontalPicker extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int saveCount = canvas.getSaveCount();
-        canvas.save();
-
-        int selectedItem = this.selectedItem;
+        int saveCount = canvas.save();
 
         float itemWithPadding = itemWidth + dividerSize;
 
-        // translate horizontal to center
-        canvas.translate(itemWithPadding * sideItems, 0);
+        float offset = 0;
+
+//        if (!infinate) {
+//            offset += itemWithPadding * sideItems;
+//        }
+
+        int scrollX = getScrollX();
+        offset = scrollX  - scrollX % itemWithPadding;
+        int firstItem = getPositionFromTouch(0);
+//        offset += itemWithPadding * firstItem;
+
+        canvas.translate(offset, 0);
 
         if (values != null) {
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < sideItems * 2 + 2; i++) {
 
-                // set text color for item
-                textPaint.setColor(getTextColor(i));
-
-                // get text layout
-                BoringLayout layout = layouts[i];
-
-                int saveCountHeight = canvas.getSaveCount();
-                canvas.save();
-
-                float x = 0;
-
-                float lineWidth = layout.getLineWidth(0);
-                if (lineWidth > itemWidth) {
-                    if (isRtl(values[i])) {
-                        x += (lineWidth - itemWidth) / 2;
-                    } else {
-                        x -= (lineWidth - itemWidth) / 2;
-                    }
+                int position = (firstItem + i) % values.length;
+                if (position < 0) {
+                    position = values.length + position;
                 }
 
-                if (marquee != null && i == selectedItem) {
-                    x += marquee.getScroll();
-                }
-
-                // translate vertically to center
-                canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
-
-                RectF clipBounds;
-                if (x == 0) {
-                    clipBounds = itemClipBounds;
-                } else {
-                    clipBounds = itemClipBoundsOffset;
-                    clipBounds.set(itemClipBounds);
-                    clipBounds.offset(x, 0);
-                }
-
-                canvas.clipRect(clipBounds);
-                layout.draw(canvas);
-
-                if (marquee != null && i == selectedItem && marquee.shouldDrawGhost()) {
-                    canvas.translate(marquee.getGhostOffset(), 0);
-                    layout.draw(canvas);
-                }
-
-                // restore vertical translation
-                canvas.restoreToCount(saveCountHeight);
+                drawItem(canvas, position);
 
                 // translate horizontal for 1 item
                 canvas.translate(itemWithPadding, 0);
@@ -322,8 +291,61 @@ public class HorizontalPicker extends View {
         // restore horizontal translation
         canvas.restoreToCount(saveCount);
 
-        drawEdgeEffect(canvas, leftEdgeEffect, 270);
-        drawEdgeEffect(canvas, rightEdgeEffect, 90);
+        if (!infinate) {
+            drawEdgeEffect(canvas, leftEdgeEffect, 270);
+            drawEdgeEffect(canvas, rightEdgeEffect, 90);
+        }
+    }
+
+    private void drawItem(Canvas canvas, int position) {
+
+        // set text color for item
+        textPaint.setColor(getTextColor(position));
+
+        // get text layout
+        BoringLayout layout = layouts[position];
+
+        int saveCountHeight = canvas.getSaveCount();
+        canvas.save();
+
+        float x = 0;
+
+        float lineWidth = layout.getLineWidth(0);
+        if (lineWidth > itemWidth) {
+            if (isRtl(values[position])) {
+                x += (lineWidth - itemWidth) / 2;
+            } else {
+                x -= (lineWidth - itemWidth) / 2;
+            }
+        }
+
+        if (marquee != null && position == selectedItem) {
+            x += marquee.getScroll();
+        }
+
+        // translate vertically to center
+        canvas.translate(-x, (canvas.getHeight() - layout.getHeight()) / 2);
+
+        RectF clipBounds;
+        if (x == 0) {
+            clipBounds = itemClipBounds;
+        } else {
+            clipBounds = itemClipBoundsOffset;
+            clipBounds.set(itemClipBounds);
+            clipBounds.offset(x, 0);
+        }
+
+        canvas.clipRect(clipBounds);
+        layout.draw(canvas);
+
+        if (marquee != null && position == selectedItem && marquee.shouldDrawGhost()) {
+            canvas.translate(marquee.getGhostOffset(), 0);
+            layout.draw(canvas);
+        }
+
+        // restore vertical translation
+        canvas.restoreToCount(saveCountHeight);
+
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -403,7 +425,7 @@ public class HorizontalPicker extends View {
             if (degrees == 270) {
                 canvas.translate(-height, Math.max(0, getScrollX()));
             } else { // 90
-                canvas.translate(0, -(Math.max(getScrollRange(), getScaleX()) + width));
+                canvas.translate(0, -(Math.max(getScrollRangeMax(), getScaleX()) + width));
             }
 
             edgeEffect.setSize(height, width);
@@ -483,20 +505,24 @@ public class HorizontalPicker extends View {
                         stopMarqueeIfNeeded();
                     }
 
-                    final int range = getScrollRange();
+                    final int rangeMax = getScrollRangeMax();
+                    final int rangeMin = getScrollRangeMin();
 
-                    if(overScrollBy(deltaMoveX, 0, getScrollX(), 0, range, 0,
-                            overscrollDistance, 0, true)) {
-                        mVelocityTracker.clear();
+                    if (!infinate) {
+                        if (overScrollBy(deltaMoveX, 0, getScrollX(), 0, rangeMax, 0, overscrollDistance, 0, true)) {
+                            mVelocityTracker.clear();
+                        }
+                    } else {
+                        scrollBy(deltaMoveX, 0  );
                     }
 
                     final float pulledToX = getScrollX() + deltaMoveX;
-                    if(pulledToX < 0) {
+                    if(pulledToX < rangeMin) {
                         leftEdgeEffect.onPull((float) deltaMoveX / getWidth());
                         if(!rightEdgeEffect.isFinished()) {
                             rightEdgeEffect.onRelease();
                         }
-                    } else if(pulledToX > range) {
+                    } else if(pulledToX > rangeMax) {
                         rightEdgeEffect.onPull((float) deltaMoveX / getWidth());
                         if(!leftEdgeEffect.isFinished()) {
                             leftEdgeEffect.onRelease();
@@ -772,7 +798,7 @@ public class HorizontalPicker extends View {
         super.scrollTo(scrollX, scrollY);
 
         if(!flingScrollerX.isFinished() && clampedX) {
-            flingScrollerX.springBack(scrollX, scrollY, 0, getScrollRange(), 0, 0);
+            flingScrollerX.springBack(scrollX, scrollY, getScrollRangeMin(), getScrollRangeMax(), 0, 0);
         }
     }
 
@@ -801,15 +827,20 @@ public class HorizontalPicker extends View {
                 previousScrollerX = scroller.getStartX();
             }
 
-            int range = getScrollRange();
-            if(previousScrollerX >= 0 && currentScrollerX < 0) {
+            int rangeMax = getScrollRangeMax();
+            int rangeMin = getScrollRangeMin();
+            if(previousScrollerX >= rangeMin && currentScrollerX < rangeMin) {
                 leftEdgeEffect.onAbsorb((int) scroller.getCurrVelocity());
-            } else if(previousScrollerX <= range && currentScrollerX > range) {
+            } else if(previousScrollerX <= rangeMax && currentScrollerX > rangeMax) {
                 rightEdgeEffect.onAbsorb((int) scroller.getCurrVelocity());
             }
 
-            overScrollBy(currentScrollerX - previousScrollerX, 0, previousScrollerX, getScrollY(),
-                    getScrollRange(), 0, overscrollDistance, 0, false);
+            if (infinate) {
+                scrollBy(currentScrollerX    - previousScrollerX, 0);
+            } else {
+                overScrollBy(currentScrollerX - previousScrollerX, 0, previousScrollerX, getScrollY(),
+                        getScrollRangeMax(), 0, overscrollDistance, 0, false);
+            }
             previousScrollerX = currentScrollerX;
 
             if(scroller.isFinished()) {
@@ -824,8 +855,22 @@ public class HorizontalPicker extends View {
     private void flingX(int velocityX) {
 
         previousScrollerX = Integer.MIN_VALUE;
-        flingScrollerX.fling(getScrollX(), getScrollY(), -velocityX, 0, 0,
-                (int) (itemWidth + dividerSize) * (values.length - 1), 0, 0, getWidth() / 2, 0);
+
+        int maxX;
+        if (infinate) {
+            maxX = Integer.MAX_VALUE;
+        } else {
+            maxX = (int) (itemWidth + dividerSize) * (values.length - 1);
+        }
+
+        int minX;
+        if (infinate) {
+            minX = Integer.MIN_VALUE;
+        } else {
+            minX = 0;
+        }
+
+        flingScrollerX.fling(getScrollX(), getScrollY(), -velocityX, 0, minX, maxX, 0, 0, getWidth() / 2, 0);
 
         invalidate();
     }
@@ -835,10 +880,12 @@ public class HorizontalPicker extends View {
         int x = getScrollX();
         int item = Math.round(x / (itemWidth + dividerSize * 1f));
 
-        if(item < 0) {
-            item = 0;
-        } else if(item > values.length) {
-            item = values.length;
+        if (!infinate) {
+            if(item < 0) {
+                item = 0;
+            } else if(item > values.length) {
+                item = values.length;
+            }
         }
 
         selectedItem = item;
@@ -977,7 +1024,7 @@ public class HorizontalPicker extends View {
      * @return Selected item from scrolling position in {param x}
      */
     private int getPositionFromCoordinates(int x) {
-        return Math.round(x / (itemWidth + dividerSize));
+        return Math.round(x / (itemWidth + dividerSize)) % values.length;
     }
 
     /**
@@ -986,7 +1033,6 @@ public class HorizontalPicker extends View {
      */
     private void scrollToItem(int index) {
         scrollTo((itemWidth + (int) dividerSize) * index, 0);
-        // invalidate() not needed because scrollTo() already invalidates the view
     }
 
     /**
@@ -1009,25 +1055,50 @@ public class HorizontalPicker extends View {
      */
     private int getInBoundsX(int x) {
 
-        if(x < 0) {
-            x = 0;
-        } else if(x > ((itemWidth + (int) dividerSize) * (values.length - 1))) {
-            x = ((itemWidth + (int) dividerSize) * (values.length - 1));
+        if (!infinate) {
+            int min = getScrollRangeMin();
+            if(x < min) {
+                return min;
+            }
+
+            int max = getScrollRangeMax();
+            if(x > max) {
+                return max;
+            }
+
+            return x;
+        } else {
+            return x;
         }
-        return x;
     }
 
-    private int getScrollRange() {
+    private int getScrollRangeMax() {
         int scrollRange = 0;
         if(values != null && values.length != 0) {
-            scrollRange = Math.max(0, ((itemWidth + (int) dividerSize) * (values.length - 1)));
+            if (infinate) {
+                scrollRange = Integer.MAX_VALUE;
+            } else {
+                scrollRange = ((itemWidth + (int) dividerSize) * (values.length - 1));
+            }
+        }
+        return scrollRange;
+    }
+
+    private int getScrollRangeMin() {
+        int scrollRange = 0;
+        if(values != null && values.length != 0) {
+            if (infinate) {
+                scrollRange = Integer.MIN_VALUE;
+            } else {
+                scrollRange = 0;
+            }
         }
         return scrollRange;
     }
 
     public interface OnItemSelected {
 
-        public void onItemSelected(int index);
+        void onItemSelected(int index);
 
     }
 
