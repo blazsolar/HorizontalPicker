@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.0.0 *(?)*
+-------------------
+ * Infinite scrolling
+ * Minimum number of items will be draw per frame
+
 Version 1.1.1 *(25.01.2016)*
 ----------------------------
  * Updating ScrollView support

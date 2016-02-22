@@ -36,11 +36,11 @@ public class MainActivity extends Activity implements HorizontalPicker.OnItemSel
 
     @Override
     public void onItemSelected(int index)    {
-        Toast.makeText(this, "Item selected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Item selected: " + index, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onItemClicked(int index) {
-        Toast.makeText(this, "Item clicked", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Item clicked: " + index, Toast.LENGTH_SHORT).show();
     }
 }

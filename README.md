@@ -30,7 +30,8 @@ Usage
         android:marqueeRepeatLimit="-1"
         picker:values="@array/values"
         picker:dividerSize="@dimen/itemPadding"
-        picker:sideItems="@integer/sideItems" />
+        picker:sideItems="@integer/sideItems"
+        picker:infinite="false"/>
 ```
 
 License
