@@ -18,20 +18,29 @@ package com.wefika.horizontalpicker.example;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.wefika.horizontalpicker.HorizontalPicker;
+import com.wefika.horizontalpicker.HorizontalPicker.OnItemClicked;
+import com.wefika.horizontalpicker.HorizontalPicker.OnItemSelected;
 
-public class MainActivity extends Activity implements HorizontalPicker.OnItemSelected, HorizontalPicker.OnItemClicked {
+public class MainActivity extends Activity implements OnItemSelected, OnItemClicked, OnClickListener {
+
+    private HorizontalPicker picker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        HorizontalPicker picker = (HorizontalPicker) findViewById(R.id.picker);
+        picker = (HorizontalPicker) findViewById(R.id.picker);
         picker.setOnItemClickedListener(this);
         picker.setOnItemSelectedListener(this);
+
+        findViewById(R.id.item_select).setOnClickListener(this);
+        findViewById(R.id.toggle_infinite).setOnClickListener(this);
     }
 
     @Override
@@ -42,5 +51,16 @@ public class MainActivity extends Activity implements HorizontalPicker.OnItemSel
     @Override
     public void onItemClicked(int index) {
         Toast.makeText(this, "Item clicked: " + index, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.item_select:
+                picker.setSelectedItem(3);
+                break;
+            case R.id.toggle_infinite:
+                picker.setInfinite(!picker.isInfinite());
+                break;
+        }
     }
 }

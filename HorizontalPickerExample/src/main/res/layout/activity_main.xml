@@ -14,12 +14,13 @@
   ~ limitations under the License.
   -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.wefika.horizontalpicker.example.MainActivity">
 
     <com.wefika.horizontalpicker.HorizontalPicker
@@ -39,4 +40,18 @@
         app:sideItems="@integer/numSideItems"
         app:infinite="true"/>
 
-</merge>
+    <Button
+        android:id="@+id/item_select"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Select 3rd element"/>
+
+    <Button
+        android:id="@+id/toggle_infinite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Toggle infinite"/>
+
+</LinearLayout>

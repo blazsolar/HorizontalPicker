@@ -41,6 +41,7 @@ import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -693,13 +694,28 @@ public class HorizontalPicker extends View {
         this.onItemClicked = onItemClicked;
     }
 
+    public void setInfinite(boolean infinite) {
+        if (infinite != this.infinite) {
+            this.infinite = infinite;
+            cancelScroll();
+            scrollTo(0, 0);
+        }
+    }
+
+    public boolean isInfinite() {
+        return infinite;
+    }
+
     public int getSelectedItem() {
         return getPositionFromTouch(getWidth() / 2);
     }
 
     public void setSelectedItem(int index) {
-        selectedItem = index;
-        scrollToItem(index);
+        if (selectedItem != index) {
+            selectedItem = index;
+            cancelScroll();
+            scrollToItem(index);
+        }
     }
 
     public int getMarqueeRepeatLimit() {
@@ -831,6 +847,16 @@ public class HorizontalPicker extends View {
         super.drawableStateChanged(); //TODO
     }
 
+    private void cancelScroll() {
+        if(!adjustScrollerX.isFinished()) {
+            adjustScrollerX.forceFinished(true);
+        }
+
+        if(!flingScrollerX.isFinished()) {
+            flingScrollerX.forceFinished(true);
+        }
+    }
+
     private int getPositionFromTouch(float x) {
         return getPositionFromCoordinates(getScrollX() + x);
     }
@@ -899,6 +925,18 @@ public class HorizontalPicker extends View {
     }
 
     private void adjustToNearestItemX() {
+        int x = getScrollX();
+        previousScrollerX = Integer.MIN_VALUE;
+        adjustScrollerX.startScroll(x, 0, getDeltaToNearestItemX(), 0, SELECTOR_ADJUSTMENT_DURATION_MILLIS);
+        invalidate();
+    }
+
+    private int getDeltaToNearestItemX() {
+        int x = getScrollX();
+        return getNearestItemX() - x;
+    }
+
+    private int getNearestItemX() {
 
         int x = getScrollX();
         int item = Math.round(x / (itemWidth + dividerSize * 1f));
@@ -914,13 +952,8 @@ public class HorizontalPicker extends View {
 
         selectedItem = getPositionInBounds(item % itemsCnt);
 
-        int itemX = (itemWidth + (int) dividerSize) * item;
+        return (itemWidth + (int) dividerSize) * item;
 
-        int deltaX = itemX - x;
-
-        previousScrollerX = Integer.MIN_VALUE;
-        adjustScrollerX.startScroll(x, 0, deltaX, 0, SELECTOR_ADJUSTMENT_DURATION_MILLIS);
-        invalidate();
     }
 
     private void calculateItemSize(int w, int h) {
