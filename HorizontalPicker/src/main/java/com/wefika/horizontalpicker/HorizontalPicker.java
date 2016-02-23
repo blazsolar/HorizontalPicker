@@ -727,7 +727,7 @@ public class HorizontalPicker extends View {
     }
 
     /**
-     * @return
+     * @return Values currently set in view.
      */
     public CharSequence[] getValues() {
         return values;
@@ -1011,7 +1011,7 @@ public class HorizontalPicker extends View {
 
     /**
      * Calculates color for specific position on time picker
-     * @param scrollX
+     * @param scrollX Relative scroll position
      * @return
      */
     private int getColor(int scrollX, int position) {
