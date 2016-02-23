@@ -466,14 +466,17 @@ public class HorizontalPicker extends View {
 
         // normalize scroll x
         float totalWidth = itemWithPadding * values.length;
-        float scrollX = getScrollX() % totalWidth;
-        if (scrollX + itemWithPadding / 2 < 0) {
-            scrollX += totalWidth;
+        float scrollX = getScrollX();
+        float scrollXRelative = scrollX % totalWidth;
+        if (scrollX < 0 && scrollXRelative + itemWithPadding / 2 < 0) {
+            scrollXRelative += totalWidth;
+        } else if (scrollX > totalWidth - itemWithPadding / 2 * 3 && scrollXRelative > totalWidth - itemWithPadding / 2) {
+            scrollXRelative -= totalWidth;
         }
 
-        if (scrollX > itemWithPadding * item - itemWithPadding / 2 &&
-                scrollX < itemWithPadding * (item + 1) - itemWithPadding / 2) {
-            int position = (int) (scrollX - itemWithPadding / 2);
+        if (scrollXRelative > itemWithPadding * item - itemWithPadding / 2 &&
+                scrollXRelative < itemWithPadding * (item + 1) - itemWithPadding / 2) {
+            int position = (int) (scrollXRelative - itemWithPadding / 2);
             color = getColor(position, item);
         } else if(item == pressedItem) {
             color = textColor.getColorForState(new int[] { android.R.attr.state_pressed }, color);
