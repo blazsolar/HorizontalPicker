@@ -467,7 +467,7 @@ public class HorizontalPicker extends View {
         // normalize scroll x
         float totalWidth = itemWithPadding * values.length;
         float scrollX = getScrollX() % totalWidth;
-        if (scrollX < 0) {
+        if (scrollX + itemWithPadding / 2 < 0) {
             scrollX += totalWidth;
         }
 
