@@ -267,7 +267,7 @@ public class HorizontalPicker extends View {
             offset -= itemWithPadding;
         }
 
-        int firstItem = getPositionFromOffset((int) offset);
+        int firstItem = getPositionFromCoordinates(offset);
 
         canvas.translate(offset, 0);
 
@@ -1051,15 +1051,6 @@ public class HorizontalPicker extends View {
         int position = (int) Math.floor(x / itemSize) - 1;
 
         position = getPositionInBounds(position % values.length);
-
-        return position;
-    }
-
-    private int getPositionFromOffset(int x) {
-        float itemSize = itemWidth + dividerSize;
-        int position = (Math.round(x / itemSize) - 1) % values.length;
-
-        position = getPositionInBounds(position);
 
         return position;
     }
