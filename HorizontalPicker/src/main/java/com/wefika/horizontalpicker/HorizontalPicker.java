@@ -459,14 +459,21 @@ public class HorizontalPicker extends View {
      */
     private int getTextColor(int item) {
 
-        int scrollX = getScrollX();
 
         // set color of text
         int color = textColor.getDefaultColor();
-        int itemWithPadding = (int) (itemWidth + dividerSize);
+        float itemWithPadding = itemWidth + dividerSize;
+
+        // normalize scroll x
+        float totalWidth = itemWithPadding * values.length;
+        float scrollX = getScrollX() % totalWidth;
+        if (scrollX < 0) {
+            scrollX += totalWidth;
+        }
+
         if (scrollX > itemWithPadding * item - itemWithPadding / 2 &&
                 scrollX < itemWithPadding * (item + 1) - itemWithPadding / 2) {
-            int position = scrollX - itemWithPadding / 2;
+            int position = (int) (scrollX - itemWithPadding / 2);
             color = getColor(position, item);
         } else if(item == pressedItem) {
             color = textColor.getColorForState(new int[] { android.R.attr.state_pressed }, color);
@@ -816,7 +823,7 @@ public class HorizontalPicker extends View {
     }
 
     private int getPositionFromTouch(float x) {
-        return getPositionFromCoordinates((int) (getScrollX() + x));
+        return getPositionFromCoordinates(getScrollX() + x);
     }
 
     private void computeScrollX() {
@@ -1039,11 +1046,11 @@ public class HorizontalPicker extends View {
      * @param x Scroll position to calculate.
      * @return Selected item from scrolling position in {param x}
      */
-    private int getPositionFromCoordinates(int x) {
+    private int getPositionFromCoordinates(float x) {
         float itemSize = itemWidth + dividerSize;
-        int position = ((int) (x / itemSize) - 1) % values.length;
+        int position = (int) Math.floor(x / itemSize) - 1;
 
-        position = getPositionInBounds(position);
+        position = getPositionInBounds(position % values.length);
 
         return position;
     }
