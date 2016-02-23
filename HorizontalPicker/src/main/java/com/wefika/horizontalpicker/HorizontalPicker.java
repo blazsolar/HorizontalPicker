@@ -584,9 +584,15 @@ public class HorizontalPicker extends View {
                         int itemPos = getPositionOnScreen(positionX);
                         int relativePos = itemPos - sideItems;
 
+                        boolean inBounds = true;
+                        if (!infinite) {
+                            inBounds = !(selectedItem == 0 && relativePos < 0)
+                                    && !(selectedItem == values.length - 1 && relativePos > 0);
+                        }
+
                         if (relativePos == 0) {
                             selectItem();
-                        } else {
+                        } else if (inBounds) {
                             smoothScrollBy(relativePos);
                         }
 

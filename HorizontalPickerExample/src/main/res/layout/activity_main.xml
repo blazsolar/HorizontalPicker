@@ -37,6 +37,6 @@
         app:values="@array/values"
         app:dividerSize="10dp"
         app:sideItems="@integer/numSideItems"
-        app:infinite="false"/>
+        app:infinite="true"/>
 
 </merge>
