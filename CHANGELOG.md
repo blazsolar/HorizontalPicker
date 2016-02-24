@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 1.1.1 *(25.01.2016)*
+Version 1.1.1 *(24.02.2016)*
 ----------------------------
  * Updating ScrollView support
  * Minor updates
