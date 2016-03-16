@@ -697,7 +697,7 @@ public class HorizontalPicker extends View {
             if (this.values != null) {
                 layouts = new BoringLayout[this.values.length];
                 for (int i = 0; i < layouts.length; i++) {
-                    layouts[i] = new BoringLayout(this.values[i], textPaint, itemWidth, Layout.Alignment.ALIGN_CENTER,
+                    layouts[i] = new BoringLayout(this.values[i], textPaint, itemWidth > 0 ? itemWidth : 0, Layout.Alignment.ALIGN_CENTER,
                             1f, 1f, boringMetrics, false, ellipsize, itemWidth);
                 }
             } else {
