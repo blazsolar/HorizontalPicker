@@ -669,7 +669,7 @@ public class HorizontalPicker extends View {
 
     public void setSideItems(int sideItems) {
         if (this.sideItems < 0) {
-            throw new IllegalArgumentException("Number of items on each side must be grater or equal to 0.");
+            throw new IllegalArgumentException("Number of items on each side must be greater or equal to 0.");
         } else if (this.sideItems != sideItems) {
             this.sideItems = sideItems;
             calculateItemSize(getWidth(), getHeight());
